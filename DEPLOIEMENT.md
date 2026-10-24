@@ -49,7 +49,7 @@ git push -u origin main
 ```
 
 (envoie tout l'historique ; au premier envoi, une fenêtre de connexion GitHub s'ouvre dans le navigateur.
-Environ 70 Mo de données : compter quelques minutes.)
+Environ 17 Mo une fois compressé : une à quelques minutes selon la connexion.)
 
 ## Étape 4 — Vérifier la mise en ligne
 
