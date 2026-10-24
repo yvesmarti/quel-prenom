@@ -105,7 +105,7 @@
   "taille_lots": {
     "nb": 353,
     "brut": 11236392,
-    "gzip": 3518553,
+    "gzip": 3481055,
     "plus_gros": [
       "ma.json",
       877271

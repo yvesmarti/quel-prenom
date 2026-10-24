@@ -27,10 +27,10 @@ Vérifier : `python --version`, `node --version`, `git --version`.
 
 ## Tout reconstruire en une commande (Windows)
 
-À la racine du projet :
+Double-cliquer `tout_reconstruire.cmd`, ou dans un terminal ouvert à la racine du projet :
 
 ```
-tout_reconstruire
+.\tout_reconstruire.cmd
 ```
 
 Ce script installe les dépendances, télécharge les données Insee, reconstruit la base et les fichiers JSON,

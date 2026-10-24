@@ -39,4 +39,4 @@ Généré automatiquement par `pipeline/quality_report.py`. Ne pas modifier à l
 
 ## Fichiers publiés
 - Index : 2 942 Ko brut, 675 Ko compressé (gzip)
-- Détails : 353 lots, 10 973 Ko brut au total, 3 436 Ko compressé ; plus gros lot : ma.json (857 Ko)
+- Détails : 353 lots, 10 973 Ko brut au total, 3 399 Ko compressé ; plus gros lot : ma.json (857 Ko)

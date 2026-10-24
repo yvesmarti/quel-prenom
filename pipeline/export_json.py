@@ -44,7 +44,8 @@ def exporter():
         SELECT p.lot, s.prenom_id, s.sexe, list([s.annee, s.valeur_arrondie, s.rang_officiel] ORDER BY s.annee)
         FROM statistique s JOIN prenom p ON p.id = s.prenom_id
         WHERE s.niveau = 'FRANCE'
-        GROUP BY ALL""").fetchall()
+        GROUP BY ALL
+        ORDER BY s.prenom_id, s.sexe""").fetchall()  # ordre fixe : fichiers identiques d'une exécution à l'autre
     for lot, prenom_id, sexe, serie in series:
         lots[lot].setdefault(prenom_id, {})[sexe] = serie
     for lot, contenu in lots.items():
