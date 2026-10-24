@@ -97,6 +97,14 @@ function reinitialiser() {
           </select>
         </label>
         <label class="champ">
+          <span>Fiche</span>
+          <select v-model="criteres.fiche">
+            <option value="tous">Toutes</option>
+            <option value="enrichies">Avec informations encyclopédiques</option>
+            <option value="completes">Complètes uniquement</option>
+          </select>
+        </label>
+        <label class="champ">
           <span>Tri</span>
           <select v-model="criteres.tri">
             <option value="popularite">Plus donnés depuis 1900</option>
@@ -124,6 +132,8 @@ function reinitialiser() {
           <RouterLink :to="{ name: 'fiche', params: { id: p.id } }" class="ligne">
             <span class="nom">{{ p.affichage }}</span>
             <span :class="['badge', p.sexe]">{{ LIBELLES_SEXE[p.sexe] }}</span>
+            <span v-if="p.qualite !== 'm'" class="doux petit" :title="p.qualite === 'c' ? 'Fiche complète' : 'Fiche partielle'">
+              {{ p.qualite === 'c' ? '● fiche complète' : '◐ fiche partielle' }}</span>
             <span class="doux petit infos">
               {{ environ(p.total) }} naissances ·
               {{ p.premiereAnnee === p.derniereAnnee ? p.premiereAnnee : `${p.premiereAnnee}–${p.derniereAnnee}` }}

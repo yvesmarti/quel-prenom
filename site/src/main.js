@@ -21,7 +21,7 @@ const router = createRouter({
     { path: '/methode', name: 'methode', component: Methode },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
-  scrollBehavior: (to, from, saved) => saved || (to.path === from.path ? false : { top: 0 }),
+  scrollBehavior: (to, from, saved) => saved || (to.hash ? { el: to.hash } : to.path === from.path ? false : { top: 0 }),
 })
 
 // La fiche remplace ce titre par le nom du prénom une fois chargée.

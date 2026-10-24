@@ -26,7 +26,7 @@ import config
 import normalize
 
 COLONNES_INDEX = ["id", "affichage", "norm", "sexe", "total_f", "total_m",
-                  "premiere_annee", "derniere_annee", "lettres", "accent", "compose", "lot"]
+                  "premiere_annee", "derniere_annee", "lettres", "accent", "compose", "lot", "qualite"]
 
 
 def ecrire(chemin, donnees):
@@ -35,10 +35,14 @@ def ecrire(chemin, donnees):
 
 
 def exporter_index_et_lots(con, sortie):
-    lignes = con.execute("""
-        SELECT id, graphie_affichage, norm, sexe_usage, total_f_arrondi, total_m_arrondi,
-               premiere_annee, derniere_annee, nb_lettres, a_accent::INTEGER, compose::INTEGER, lot
-        FROM prenom ORDER BY total_f_arrondi + total_m_arrondi DESC, id""").fetchall()
+    # Qualité de la fiche : c = complète, p = partielle, m = minimale (règle : pipeline/encyclo.py).
+    qualite = ("left(q.niveau, 1)" if table_existe(con, "fiche_qualite") else "'m'")
+    jointure = "LEFT JOIN fiche_qualite q ON q.prenom_id = p.id" if table_existe(con, "fiche_qualite") else ""
+    lignes = con.execute(f"""
+        SELECT p.id, graphie_affichage, norm, sexe_usage, total_f_arrondi, total_m_arrondi,
+               premiere_annee, derniere_annee, nb_lettres, a_accent::INTEGER, compose::INTEGER, lot,
+               coalesce({qualite}, 'm')
+        FROM prenom p {jointure} ORDER BY total_f_arrondi + total_m_arrondi DESC, p.id""").fetchall()
     ecrire(sortie / f"index.v{config.VERSION_FORMAT}.json",
            {"version": config.VERSION_FORMAT, "colonnes": COLONNES_INDEX, "lignes": [list(l) for l in lignes]})
 
@@ -174,9 +178,78 @@ def exporter_geo(con, sortie):
     return len(lots)
 
 
+def table_existe(con, nom):
+    return con.execute("SELECT count(*) FROM information_schema.tables WHERE table_name = ?", [nom]).fetchone()[0] > 0
+
+
+def exporter_encyclopedie(con, sortie):
+    """Fichiers d'enrichissement, séparés par licence :
+    - encyclo/<lot>.json      : Wikidata (CC0) — éléments, langues d'usage, variantes, personnalités, liens ;
+    - wiktionnaire/<lot>.json : Wiktionnaire (CC BY-SA 4.0) — étymologie, origine, prononciation, variantes.
+    """
+    if not table_existe(con, "fiche_qualite"):
+        print("  (enrichissement absent : lancer wiktionnaire.py, wikidata.py puis encyclo.py)")
+        return 0, 0
+    lot_de = dict(con.execute("SELECT id, lot FROM prenom").fetchall())
+    encyclo = defaultdict(lambda: defaultdict(dict))
+    wikt = defaultdict(lambda: defaultdict(dict))
+
+    def ajouter(cible, pid, cle, valeur):
+        cible[lot_de[pid]][pid].setdefault(cle, []).append(valeur)
+
+    for pid, q, statut, lib, art in con.execute("""SELECT c.prenom_id, c.qid, c.statut, w.libelle, w.article_fr
+            FROM correspondance_wikidata c JOIN wikidata_prenom w ON w.qid = c.qid
+            WHERE c.statut <> 'type_incompatible' ORDER BY 1, 2""").fetchall():
+        ajouter(encyclo, pid, "wikidata", {"qid": q, "libelle": lib, "statut": statut, "article": art})
+    for pid, langue in con.execute("SELECT prenom_id, langue FROM langue_usage ORDER BY 1, 2").fetchall():
+        ajouter(encyclo, pid, "langues", langue)
+    for pid, lib, assoc, type_, langue, source, url in con.execute("""SELECT prenom_id, libelle, prenom_associe_id,
+            type, langue, source_id, url_source FROM variante ORDER BY prenom_id, type, langue NULLS FIRST, libelle""").fetchall():
+        v = {"libelle": lib, "type": type_}
+        if assoc:
+            v["id"] = assoc
+        if langue:
+            v["langue"] = langue
+        if source == "wikidata":
+            ajouter(encyclo, pid, "variantes", {**v, "url": url})
+        else:
+            ajouter(wikt, pid, "variantes", v)
+    for pid, q, nom, pres, n, d, dom, url, liens in con.execute("""SELECT prenom_id, qid, nom, presentation, naissance,
+            deces, domaines, url, nb_liens FROM personnalite ORDER BY prenom_id, nb_liens DESC, qid""").fetchall():
+        ajouter(encyclo, pid, "personnalites", {"qid": q, "nom": nom, "presentation": pres, "naissance": n, "deces": d,
+                                                "domaines": [x for x in (dom or "").split("|") if x], "url": url,
+                                                "liens": liens})
+    for pid, mot, section, etym, ipa, orig, url in con.execute("""SELECT prenom_id, mot, titre_section, etymologie,
+            ipa, origines, url FROM wiktionnaire_entree ORDER BY prenom_id, titre_section""").fetchall():
+        ajouter(wikt, pid, "entrees", {"mot": mot, "section": section, "etymologie": etym, "api": json.loads(ipa),
+                                       "origines": json.loads(orig), "url": url})
+    for pid, *compteurs, niveau in con.execute("""SELECT prenom_id, n_etym, n_orig, n_pron, n_var, n_lang, n_perso,
+            niveau FROM fiche_qualite WHERE niveau <> 'minimale' ORDER BY 1""").fetchall():
+        encyclo[lot_de[pid]][pid]["qualite"] = niveau
+
+    for lot, contenu in encyclo.items():
+        ecrire(sortie / "encyclo" / f"{lot}.json", {
+            "licence": "Données Wikidata : CC0 1.0 (domaine public)",
+            "source": "https://www.wikidata.org/", "prenoms": contenu})
+    for lot, contenu in wikt.items():
+        ecrire(sortie / "wiktionnaire" / f"{lot}.json", {
+            "licence": "CC BY-SA 4.0 — https://creativecommons.org/licenses/by-sa/4.0/deed.fr",
+            "attribution": "Textes issus du Wiktionnaire (fr.wiktionary.org), contributeurs du Wiktionnaire ; "
+                           "extraction wiktextract (kaikki.org). Chaque entrée renvoie à sa page source, dont "
+                           "l'historique liste les auteurs.",
+            "prenoms": contenu})
+    return len(encyclo), len(wikt)
+
+
 def exporter_meta(con, sortie, nb_prenoms, nb_lots):
     colonnes = [d[0] for d in con.execute("SELECT * FROM source ORDER BY id").description]
     sources = [dict(zip(colonnes, s)) for s in con.execute("SELECT * FROM source ORDER BY id").fetchall()]
+    resume_wd = config.DOSSIER_CACHE_WIKIDATA / "resume.json"
+    if resume_wd.exists():
+        wd = json.loads(resume_wd.read_text(encoding="utf-8"))
+        sources.append({**{k: config.SOURCE_WIKIDATA[k] for k in ("id", "organisme", "titre", "licence")},
+                        "url": config.SOURCE_WIKIDATA["page"], "fichier_url": config.SOURCE_WIKIDATA["url"],
+                        "publication": "base vivante", "date_recuperation": wd["debut"], "sha256": None})
     prenoms = next(s for s in sources if s["id"] == config.SOURCE_ID)
     annees = con.execute("SELECT min(annee), max(annee) FROM statistique").fetchone()
     naissances = defaultdict(dict)
@@ -220,9 +293,11 @@ def exporter_meta(con, sortie, nb_prenoms, nb_lots):
 def exporter():
     con = duckdb.connect(str(config.BASE), read_only=True)
     sortie = config.DOSSIER_PUBLIC
-    for nom in ("prenoms", "classements", "geo"):  # dossiers entièrement générés : on repart de zéro
+    for nom in ("prenoms", "classements", "geo", "encyclo", "wiktionnaire"):  # dossiers entièrement générés
         shutil.rmtree(sortie / nom, ignore_errors=True)
     nb_prenoms, nb_lots = exporter_index_et_lots(con, sortie)
+    nb_encyclo, nb_wikt = exporter_encyclopedie(con, sortie)
+    print(f"  enrichissement : {nb_encyclo} lots Wikidata, {nb_wikt} lots Wiktionnaire")
     tendances = exporter_tendances(con, sortie)
     nb_annees, nb_zones = exporter_classements(con, sortie)
     nb_lots_geo = exporter_geo(con, sortie)

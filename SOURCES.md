@@ -81,16 +81,41 @@ D'où le choix de ne calculer les fréquences qu'à partir de 1946.
 | Traitement | Simplification (Douglas-Peucker, ≈ 1 km), DROM replacés en encarts, coordonnées arrondies (`pipeline/geo.py`) |
 | Contrôle | Les codes de la carte correspondent exactement à ceux du fichier des prénoms (test automatique) |
 
-## 4. Wikidata — prévue (phase 3), non intégrée
+## 4. Wikidata — **intégrée (phase 3)**
 
-https://www.wikidata.org/ — licence CC0. Origines, variantes, personnalités, liens Wikipédia.
+| | |
+|---|---|
+| Producteur | Contributeurs de Wikidata (Wikimedia) |
+| Accès | Service SPARQL https://query.wikidata.org/sparql (requêtes en lots, 1 s de pause, nouvelles tentatives, cache local `data/raw/wikidata/cache/`, journal `data/work/journal_wikidata.log`) |
+| Licence | CC0 1.0 (domaine public) |
+| Date de récupération | 24/10/2026 (date exacte : `data/raw/wikidata/resume.json`) ; base vivante : les résultats changent avec le temps |
+| Éléments utilisés | Éléments de type prénom (Q202444), prénom féminin (Q11879590), masculin (Q12308941), épicène (Q3409032) : libellés, P1705 (libellé natif), P460 (réputé identique à), P1560 (équivalent dans l'autre genre), P407 (langue d'usage), article de Wikipédia en français, nombre de liens ; humains (Q5) dont P735 (prénom) pointe vers ces éléments |
+| Correspondance | Graphie exacte (accents compris, casse ignorée) entre le prénom Insee et un libellé ou le libellé natif de l'élément ; type compatible avec l'usage Insee ; plusieurs éléments compatibles = correspondance « ambiguë », signalée sur la fiche et dans le rapport |
+| Limites | P407 indique des langues d'usage, pas une origine ; la couverture est inégale selon les prénoms ; les personnalités dépendent des données saisies sur Wikidata (prénom renseigné, article en français) |
+| Non utilisé | Jours de fête (P1750) : les calendriers de plusieurs pays y sont mêlés sans indication systématique du pays |
 
-## 5. Wiktionnaire — prévue (phase 3), non intégrée
+## 5. Wiktionnaire — **intégrée (phase 3), textes sous CC BY-SA 4.0**
 
-https://fr.wiktionary.org/ — licence CC BY-SA (et GFDL) : attribution et partage dans les mêmes conditions.
-**Décision à soumettre en phase 3** : licence compatible pour les données publiées, ou non-reprise des textes.
+| | |
+|---|---|
+| Producteur | Contributeurs du Wiktionnaire en français |
+| Fichier utilisé | Extraction structurée « wiktextract » de kaikki.org (T. Ylonen) à partir du dump officiel du 1er octobre 2026 : https://kaikki.org/frwiktionary/raw-wiktextract-data.jsonl.gz (≈ 700 Mo) |
+| Licence | CC BY-SA 4.0 (et GFDL) pour les textes du Wiktionnaire — **décision du 24/10/2026 : reprise des textes, publiés sous CC BY-SA 4.0 dans des fichiers séparés** (voir `LICENCES.md`) |
+| Périmètre | Entrées de langue française dont la section est « Prénom » (9 689) |
+| Champs repris | Texte de l'étymologie, prononciation (API), langue d'origine (catégorie « … issus d'un mot en … »), formes (variantes, équivalent dans l'autre genre, diminutifs), prénoms composés et apparentés, traductions |
+| Correspondance | Graphie exacte (accents compris, casse ignorée) |
+| Limites | Textes collaboratifs non relus par Prénoscope (signalé sur chaque fiche) ; une entrée « Prénom » n'existe que pour une partie des prénoms ; les catégories d'origine indiquent la langue de l'étymon, pas une « culture » |
+| Non utilisé | Enregistrements audio (licences propres à chaque fichier de Wikimedia Commons, et le site ne doit pas dépendre d'un service externe) |
 
-## 6. Autres sources — à étudier
+## 6. Autres sources de statistiques de prénoms — identifiées, non intégrées
 
-Statistiques de prénoms d'autres pays légalement réutilisables (à recenser en phase 3 avec URL, producteur,
-licence, périmètre, dates, champs, limites). Aucune n'est intégrée.
+Recensement préparatoire pour la base internationale (phase 4). Aucune n'est intégrée ; les licences marquées « à confirmer »
+devront être vérifiées sur le texte officiel avant toute intégration.
+
+| Pays | Producteur et jeu de données | Licence (état de la vérification) | Périmètre connu | Limites connues |
+|---|---|---|---|---|
+| États-Unis | Social Security Administration, « Baby Names from Social Security Card Applications – National Data » (https://catalog.data.gov/dataset/baby-names-from-social-security-card-applications-national-data) | CC0 selon data.gov (vérifié sur la fiche data.gov) | Depuis 1880, prénom, sexe, effectif | Prénoms donnés moins de 5 fois exclus |
+| Angleterre et pays de Galles | Office for National Statistics, « Baby names in England and Wales » (https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths/datasets/babynamesinenglandandwalesfrom1996) | Open Government Licence v3.0 (mention générale du site ONS ; à confirmer pour ce jeu) | Depuis 1996 (rangs et effectifs) ; top 100 historique depuis 1904 par décennie | Édition la plus récente à vérifier |
+| Belgique | Statbel, prénoms de la population et des nouveau-nés (https://statbel.fgov.be/fr/open-data) | Licence open data Statbel (attribution) — texte officiel à confirmer | Par commune, par sexe | Effectifs < 5 masqués |
+| Québec | Retraite Québec, banque de prénoms (Données Québec) | À confirmer (Données Québec publie souvent sous CC BY 4.0) | — | Non vérifié |
+| Suisse | Office fédéral de la statistique, prénoms des nouveau-nés (opendata.swiss) | À confirmer (conditions « open use, source à citer » fréquentes) | — | Non vérifié |

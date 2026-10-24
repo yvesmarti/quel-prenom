@@ -16,6 +16,7 @@ Voir [ROADMAP.md](ROADMAP.md) pour la suite.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Organisation des dossiers, choix techniques, performances |
 | [SOURCES.md](SOURCES.md) | Sources, licences, particularités constatées dans les données |
 | [DATA_MODEL.md](DATA_MODEL.md) | Tables, fichiers publiés, règles (mixte, composé, accents…) |
+| [LICENCES.md](LICENCES.md) | Licence de chaque famille de fichiers publiés (Etalab, CC0, CC BY-SA 4.0) |
 | [STATISTIQUES.md](STATISTIQUES.md) | Définitions : fréquences, évolutions, tendances, classements, géographie, couverture |
 | [ROADMAP.md](ROADMAP.md) | Phases du projet |
 | [data/reports/qualite.md](data/reports/qualite.md) | Rapport de qualité généré automatiquement |
@@ -51,6 +52,9 @@ Toutes les commandes se lancent depuis la racine du projet, sauf indication cont
 | 4. Inspecter | `.venv\Scripts\python pipeline\inspect_raw.py` | Vérifie la structure et relève les anomalies |
 | 5. Construire la base | `.venv\Scripts\python pipeline\build_db.py` | Crée `data/work/prenoscope.duckdb` |
 | 6. Statistiques | `.venv\Scripts\python pipeline\stats.py` | Calcule indicateurs, tendances, agrégats géographiques |
+| 6b. Wiktionnaire | `.venv\Scripts\python pipeline\wiktionnaire.py` | Extrait les prénoms du Wiktionnaire (≈ 1 min) et les relie aux prénoms Insee |
+| 6c. Wikidata | `.venv\Scripts\python pipeline\wikidata.py` | Interroge Wikidata (≈ 1 à 2 h la première fois, puis cache local) |
+| 6d. Consolidation | `.venv\Scripts\python pipeline\encyclo.py` | Remplit origines, étymologies, variantes, personnalités, qualité des fiches |
 | 7. Générer les fichiers du site | `.venv\Scripts\python pipeline\export_json.py` | Écrit `site/public/data/` |
 | 8. Fonds de carte | `.venv\Scripts\python pipeline\geo.py` | Simplifie les contours, place l'outre-mer en encarts |
 | 9. Rapport de qualité | `.venv\Scripts\python pipeline\quality_report.py` | Écrit `data/reports/qualite.md` |

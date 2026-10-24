@@ -20,6 +20,60 @@ def ko(n):
     return f"{n / 1024:,.0f} Ko".replace(",", " ")
 
 
+def enrichissement(con):
+    """Chiffres de la phase 3 (vides si l'enrichissement n'a pas été lancé)."""
+    existe = lambda t: con.execute("SELECT count(*) FROM information_schema.tables WHERE table_name = ?", [t]).fetchone()[0]
+    if not existe("fiche_qualite"):
+        return None
+    val = lambda sql: con.execute(sql).fetchone()[0]
+    distincts = lambda t: val(f"SELECT count(DISTINCT prenom_id) FROM {t}")
+    resume_wd = config.DOSSIER_CACHE_WIKIDATA / "resume.json"
+    return {
+        "fiches": dict(con.execute("SELECT niveau, count(*) FROM fiche_qualite GROUP BY 1 ORDER BY 1").fetchall()),
+        "part_naissances_fiches_enrichies": val("""SELECT round(sum(p.total_f_arrondi + p.total_m_arrondi)
+            FILTER (WHERE q.niveau <> 'minimale') / sum(p.total_f_arrondi + p.total_m_arrondi), 4)
+            FROM prenom p JOIN fiche_qualite q ON q.prenom_id = p.id"""),
+        "prenoms_avec_etymologie": distincts("etymologie"),
+        "prenoms_avec_origine": distincts("origine"),
+        "prenoms_avec_prononciation": distincts("prononciation"),
+        "prenoms_avec_variantes": distincts("variante"),
+        "prenoms_avec_langues_usage": distincts("langue_usage"),
+        "prenoms_avec_personnalites": distincts("personnalite"),
+        "personnalites": val("SELECT count(*) FROM personnalite"),
+        "personnalites_distinctes": val("SELECT count(DISTINCT qid) FROM personnalite"),
+        "wiktionnaire_entrees_francaises": sum(1 for _ in open(config.BASE.parent / "wiktionnaire_prenoms.jsonl", encoding="utf-8")),
+        "wiktionnaire_entrees_reliees": val("SELECT count(*) FROM wiktionnaire_entree"),
+        "correspondances_wikidata": dict(con.execute("""SELECT statut, count(DISTINCT prenom_id)
+            FROM correspondance_wikidata GROUP BY 1 ORDER BY 1""").fetchall()),
+        "exemples_ambigus_wikidata": [p for (p,) in con.execute("""SELECT prenom_id FROM correspondance_wikidata
+            WHERE statut = 'ambigu' GROUP BY 1 ORDER BY count(*) DESC, 1 LIMIT 10""").fetchall()],
+        "wikidata": json.loads(resume_wd.read_text(encoding="utf-8")) if resume_wd.exists() else None,
+        "anecdotes": 0,
+    }
+
+
+def texte_enrichissement(e):
+    if not e:
+        return "- Non lancé (pipeline/wiktionnaire.py, wikidata.py, encyclo.py)."
+    f, c, wd = e["fiches"], e["correspondances_wikidata"], e["wikidata"] or {}
+    return "\n".join([
+        f"- Fiches : complètes {f.get('complete', 0):,} · partielles {f.get('partielle', 0):,} · minimales {f.get('minimale', 0):,}",
+        f"- Part des naissances 1900-2025 couvertes par une fiche enrichie : {e['part_naissances_fiches_enrichies']:.1%}",
+        f"- Prénoms avec étymologie sourcée : {e['prenoms_avec_etymologie']:,} · origine : {e['prenoms_avec_origine']:,} · "
+        f"prononciation : {e['prenoms_avec_prononciation']:,}",
+        f"- Prénoms avec variantes : {e['prenoms_avec_variantes']:,} · langues d'usage : {e['prenoms_avec_langues_usage']:,} · "
+        f"personnalités : {e['prenoms_avec_personnalites']:,} ({e['personnalites']:,} mentions, {e['personnalites_distinctes']:,} personnes)",
+        f"- Wiktionnaire : {e['wiktionnaire_entrees_francaises']:,} entrées « Prénom » en français, dont "
+        f"{e['wiktionnaire_entrees_reliees']:,} reliées à un prénom Insee (graphie exacte)",
+        f"- Wikidata : {wd.get('elements', 0):,} éléments prénoms ; correspondances (prénoms Insee) : unique "
+        f"{c.get('unique', 0):,} · ambiguë {c.get('ambigu', 0):,} · type incompatible écarté {c.get('type_incompatible', 0):,}",
+        f"- Exemples de correspondances ambiguës (plusieurs éléments de même graphie) : {', '.join(e['exemples_ambigus_wikidata'])}",
+        f"- Personnalités non récupérées (délai dépassé) : {len(wd.get('echecs_personnalites', []))} élément(s) "
+        f"— interrogation du {wd.get('debut', '?')} au {wd.get('fin', '?')}",
+        "- Anecdotes : 0 (aucune source ouverte et fiable retenue)",
+    ])
+
+
 def rapport():
     con = duckdb.connect(str(config.BASE), read_only=True)
     val = lambda sql: con.execute(sql).fetchone()[0]
@@ -35,7 +89,9 @@ def rapport():
                        ("classements territoriaux", "classements/zones/*.json"),
                        ("données géographiques par prénom", "geo/prenoms/*.json"),
                        ("fonds de carte et totaux", "geo/*.json"),
-                       ("tendances", "tendances.json"), ("couverture", "couverture.json"), ("meta", "meta.json")):
+                       ("tendances", "tendances.json"), ("couverture", "couverture.json"), ("meta", "meta.json"),
+                       ("enrichissement Wikidata (CC0)", "encyclo/*.json"),
+                       ("enrichissement Wiktionnaire (CC BY-SA)", "wiktionnaire/*.json")):
         fichiers = sorted(set(config.DOSSIER_PUBLIC.glob(motif)), key=lambda p: p.stat().st_size)
         if fichiers:
             b, g = taille(fichiers)
@@ -69,7 +125,7 @@ def rapport():
             "SELECT graphies FROM ambiguite_normalisation ORDER BY nb DESC, norm LIMIT 8").fetchall()],
         "presents_une_seule_annee": val("""SELECT count(*) FROM (SELECT prenom_id FROM statistique
             WHERE niveau='FRANCE' GROUP BY 1 HAVING count(DISTINCT annee) = 1)"""),
-        "fiches_enrichies": 0, "etymologies_sourcees": 0, "personnalites": 0,
+        "enrichissement": enrichissement(con),
         "taille_index": {"brut": t_index[0], "gzip": t_index[1]},
         "taille_lots": {"nb": len(lots), "brut": t_lots[0], "gzip": t_lots[1],
                         "plus_gros": [lots[-1].name, lots[-1].stat().st_size] if lots else None},
@@ -112,9 +168,8 @@ Champ du dénominateur : métropole avant 1994, France entière ensuite. Détail
 - Composés (avec tiret) : {q['composes']:,} — avec accent ou ligature : {q['avec_accent']:,}
 - Présents une seule année au niveau national : {q['presents_une_seule_annee']:,}
 
-## Enrichissement (phase 3, non commencé)
-- Fiches enrichies : 0 · étymologies sourcées : 0 · personnalités : 0
-- Toutes les fiches sont donc « minimales » (statistiques INSEE seules).
+## Enrichissement encyclopédique (phase 3)
+""" + texte_enrichissement(q["enrichissement"]) + f"""
 
 ## Contrôles et anomalies
 - Valeurs nulles : aucune · doublons de clé : {a['doublons_cle']} · rangs dupliqués : {a['rangs_dupliques']}

@@ -65,8 +65,33 @@ SOURCES = [
         "licence": LICENCE_ETALAB,
         "publication": "2018",
     },
+    {
+        "id": "wiktionnaire-kaikki",
+        "fichier": "wiktionnaire/raw-wiktextract-data.jsonl.gz",
+        "url": "https://kaikki.org/frwiktionary/raw-wiktextract-data.jsonl.gz",
+        "page": "https://kaikki.org/frwiktionary/rawdata.html",
+        "organisme": "Wiktionnaire (contributeurs), extraction structurée wiktextract / kaikki.org (T. Ylonen)",
+        "titre": "Wiktionnaire en français – extraction structurée (dump du 1er octobre 2026)",
+        "licence": "CC BY-SA 4.0 (textes du Wiktionnaire)",
+        "publication": "2026-10-01",
+        "lourd": True,  # ≈ 700 Mo : téléchargé une fois, puis réutilisé
+    },
 ]
 SOURCES_PAR_ID = {s["id"]: s for s in SOURCES}
+
+# Wikidata est interrogé par requêtes SPARQL (pas de fichier unique) : voir pipeline/wikidata.py.
+SOURCE_WIKIDATA = {
+    "id": "wikidata",
+    "organisme": "Wikidata (contributeurs)",
+    "titre": "Wikidata – éléments « prénom » et personnes",
+    "page": "https://www.wikidata.org/",
+    "url": "https://query.wikidata.org/sparql",
+    "licence": "CC0 1.0 (domaine public)",
+}
+WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
+WIKIDATA_USER_AGENT = "Prenoscope/0.3 (projet personnel non commercial ; https://github.com/) python-urllib"
+DOSSIER_CACHE_WIKIDATA = DOSSIER_RAW / "wikidata"
+LICENCE_WIKTIONNAIRE = "CC BY-SA 4.0"
 
 
 def chemin_source(source_id):

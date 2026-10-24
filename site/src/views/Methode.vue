@@ -4,11 +4,13 @@ import * as echarts from 'echarts/core'
 import { LineChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent, MarkLineComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
+import { useRoute } from 'vue-router'
 import { chargerMeta, chargerCouverture } from '../lib/dataLoader.js'
 import { ORDRE_TENDANCES, LIBELLES_TENDANCES, definitionTendance } from '../lib/tendances.js'
 
 echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, MarkLineComponent, CanvasRenderer])
 
+const route = useRoute()
 const meta = ref(null)
 const etat = ref('chargement')
 const conteneur = ref(null)
@@ -22,6 +24,8 @@ async function charger() {
     etat.value = 'ok'
     await nextTick()
     dessiner(c)
+    // Lien direct vers une section (ex. #/methode#qualite) : on y va une fois le contenu affiché.
+    if (route.hash) document.querySelector(route.hash)?.scrollIntoView()
   } catch {
     etat.value = 'erreur'
   }
@@ -146,13 +150,34 @@ onBeforeUnmount(() => { window.removeEventListener('resize', redimensionner); gr
         </p>
       </section>
 
+      <section id="qualite" class="carte">
+        <h2>Informations encyclopédiques et qualité des fiches</h2>
+        <ul>
+          <li><strong>Étymologie, langue d'origine, prononciation, variantes</strong> : reprises du
+            <a href="https://fr.wiktionary.org/">Wiktionnaire</a> (extraction structurée du dump officiel par
+            <a href="https://kaikki.org/frwiktionary/">kaikki.org</a>), sous licence
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr">CC BY-SA 4.0</a> : ces textes sont cités tels
+            quels, attribués, et publiés par Prénoscope sous la même licence. Ils n'ont pas été relus un par un.</li>
+          <li><strong>Langues d'usage, formes apparentées, personnalités</strong> : <a href="https://www.wikidata.org/">Wikidata</a>
+            (CC0). Un prénom de l'Insee n'est relié à un élément Wikidata que si la graphie est exactement la même (accents
+            compris) et le type compatible (prénom féminin, masculin ou épicène) ; si plusieurs éléments conviennent, la fiche le signale.</li>
+          <li><strong>Personnalités</strong> : personnes dont c'est le prénom (le premier, quand l'ordre est connu), ayant un article
+            sur Wikipédia en français et au moins 10 articles dans les projets Wikimédia ; les 8 plus présentes sont retenues.
+            Porter un prénom ne suffit pas : ce critère de notoriété, imparfait mais vérifiable, sert de sélection.</li>
+          <li><strong>Qualité de la fiche</strong> : <em>complète</em> = étymologie sourcée, au moins une variante et une
+            personnalité ; <em>partielle</em> = au moins une information encyclopédique sourcée ; <em>minimale</em> = statistiques
+            de l'Insee seulement. Une information absente n'est jamais remplacée par une supposition.</li>
+          <li>Aucune anecdote n'est publiée pour l'instant : aucune source ouverte et fiable n'a été retenue.</li>
+        </ul>
+      </section>
+
       <section class="carte">
         <h2>Sources et licences</h2>
         <ul>
           <li v-for="s in meta.sources" :key="s.id">
             <a :href="s.url">{{ s.organisme }} — {{ s.titre }}</a>
-            <span class="doux"> ({{ s.licence }} ; publié {{ s.publication }}, récupéré le
-              {{ new Date(s.date_recuperation).toLocaleDateString('fr-FR') }})</span>
+            <span class="doux"> ({{ s.licence }} ; {{ /^\d/.test(s.publication) ? 'publié ' + s.publication : s.publication }},
+              récupéré le {{ new Date(s.date_recuperation).toLocaleDateString('fr-FR') }})</span>
           </li>
         </ul>
       </section>

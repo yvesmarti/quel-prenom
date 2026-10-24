@@ -9,6 +9,7 @@ export const CRITERES_VIDES = {
   terminaison: '',
   accent: 'tous', // tous | avec | sans
   compose: 'tous', // tous | oui | non
+  fiche: 'tous', // tous | enrichies (partielles ou complètes) | completes
   tri: 'popularite', // popularite | alpha
 }
 
@@ -30,6 +31,7 @@ export function filtrer(prenoms, criteres) {
     (!terminaison || p.norm.endsWith(terminaison)) &&
     (c.accent === 'tous' || (c.accent === 'avec') === p.accent) &&
     (c.compose === 'tous' || (c.compose === 'oui') === p.compose) &&
+    (c.fiche === 'tous' || (c.fiche === 'completes' ? p.qualite === 'c' : p.qualite !== 'm')) &&
     (!texte || p.norm.includes(texte)),
   )
 

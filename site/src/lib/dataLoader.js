@@ -33,6 +33,8 @@ export function decoderIndex(json) {
     accent: l[col.accent] === 1,
     compose: l[col.compose] === 1,
     lot: l[col.lot],
+    // Qualité de la fiche : c = complète, p = partielle, m = minimale (absent des anciens index : m).
+    qualite: col.qualite != null ? l[col.qualite] : 'm',
   }))
 }
 
@@ -81,3 +83,18 @@ export async function chargerGeoPrenom(prenom) {
     return {} // prénom absent des niveaux régional et départemental : pas de fichier
   }
 }
+
+/** Fichier optionnel : renvoie {} si le prénom n'a pas d'entrée (ou si le lot n'existe pas). */
+async function entreeOptionnelle(chemin, id) {
+  try {
+    return (await charger(chemin)).prenoms[id] || {}
+  } catch {
+    return {}
+  }
+}
+
+/** Enrichissement Wikidata (CC0) : éléments, langues d'usage, variantes, personnalités. */
+export const chargerEncyclo = (prenom) => entreeOptionnelle(`encyclo/${prenom.lot}.json`, prenom.id)
+
+/** Enrichissement Wiktionnaire (CC BY-SA 4.0) : étymologie, origine, prononciation, variantes. */
+export const chargerWiktionnaire = (prenom) => entreeOptionnelle(`wiktionnaire/${prenom.lot}.json`, prenom.id)

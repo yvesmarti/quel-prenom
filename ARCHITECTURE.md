@@ -27,13 +27,16 @@ prenoms/
 │  ├─ xlsx.py               lecture des classeurs .xlsx de l'Insee (bibliothèque standard)
 │  ├─ stats.py              indicateurs, tendances, agrégats géographiques, couverture
 │  ├─ outils.py             insertion rapide dans DuckDB
+│  ├─ wiktionnaire.py       extraction des prénoms du Wiktionnaire (fichier kaikki.org) et import
+│  ├─ wikidata.py           requêtes SPARQL en lots (cache, reprise, journal), correspondances, personnalités
+│  ├─ encyclo.py            consolidation : origine, étymologie, variantes, personnalités, qualité des fiches
 │  ├─ export_json.py        fichiers publiés
 │  ├─ geo.py                fonds de carte simplifiés, outre-mer en encarts
 │  ├─ quality_report.py     rapport de qualité → data/reports/qualite.md
 │  └─ run_all.py            enchaîne toutes les étapes
 ├─ tests/                   tests pytest (règles + intégrité des données réelles)
 ├─ data/
-│  ├─ raw/                  (non versionné) fichier Insee + manifeste
+│  ├─ raw/                  (non versionné) fichiers sources + manifeste ; wikidata/cache/ (réponses SPARQL)
 │  ├─ work/                 (non versionné) prenoscope.duckdb
 │  └─ reports/              rapports générés (versionnés)
 └─ site/                    application Vue 3 + Vite (JavaScript)
@@ -88,6 +91,9 @@ et « mar », codes de zones numérotés.
 ## Évolution prévue
 
 - Phase 2 : réalisée (voir STATISTIQUES.md).
+- Phase 3 : réalisée. Les données d'enrichissement sont publiées dans deux dossiers séparés par licence
+  (`encyclo/` en CC0, `wiktionnaire/` en CC BY-SA 4.0, voir LICENCES.md), chargés à l'ouverture d'une fiche.
+  Wikidata est interrogé une seule fois (≈ 1 à 2 h) puis relu depuis le cache local à chaque reconstruction.
 - Phase 3 : tables d'enrichissement (déjà créées, vides) alimentées par des modules séparés dans `pipeline/`.
 - Modules ludiques : nouvelles vues dans `site/src/views/`, logique pure dans `site/src/lib/` (testable).
 - `VERSION_FORMAT` (config.py) et le suffixe `.v1` permettent de changer le format sans casser les caches.

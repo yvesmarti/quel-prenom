@@ -6,10 +6,12 @@ import { indicateurs } from '../lib/indicateurs.js'
 import { LIBELLES_TENDANCES, definitionTendance, ORDRE_TENDANCES } from '../lib/tendances.js'
 import CourbeNationale from '../components/CourbeNationale.vue'
 import GeographiePrenom from '../components/GeographiePrenom.vue'
+import EncyclopediePrenom from '../components/EncyclopediePrenom.vue'
 
 const props = defineProps({ id: { type: String, required: true } })
 
 const LIBELLES_USAGE = { F: 'Usage féminin', M: 'Usage masculin', X: 'Usage mixte' }
+const LIBELLES_QUALITE = { c: 'Fiche complète', p: 'Fiche partielle', m: 'Fiche minimale' }
 const NOMS = { F: 'Filles', M: 'Garçons' }
 // Couleurs distinguables par les daltoniens ; le sexe est en plus signalé par le trait (tirets = garçons).
 const COULEURS_SEXE = { F: '#b5552b', M: '#2f5f8a' }
@@ -109,6 +111,8 @@ const pourMille = (x) => `${x.toLocaleString('fr-FR', { maximumFractionDigits: 2
       <h1>{{ prenom.affichage }}</h1>
       <p class="sous-titre">
         <span :class="['badge', prenom.sexe]">{{ LIBELLES_USAGE[prenom.sexe] }}</span>
+        <RouterLink :to="{ name: 'methode', hash: '#qualite' }" :class="['badge', 'qualite', 'q-' + prenom.qualite]"
+                    title="Niveau de documentation de la fiche (voir la méthode)">{{ LIBELLES_QUALITE[prenom.qualite] }}</RouterLink>
         <span class="doux">
           {{ prenom.lettres }} lettres<template v-if="prenom.compose"> · composé</template>
           · graphie Insee : {{ prenom.id.toUpperCase() }}
@@ -132,6 +136,8 @@ const pourMille = (x) => `${x.toLocaleString('fr-FR', { maximumFractionDigits: 2
         </template>
       </ul>
     </header>
+
+    <EncyclopediePrenom :prenom="prenom" />
 
     <section class="carte" aria-labelledby="titre-courbe">
       <div class="titre-section">
@@ -238,14 +244,22 @@ const pourMille = (x) => `${x.toLocaleString('fr-FR', { maximumFractionDigits: 2
 
     <section class="carte doux petit" aria-labelledby="titre-sources">
       <h2 id="titre-sources" class="h-petit">Ce que contient cette fiche</h2>
-      <p>
-        Fiche <strong>minimale</strong> : statistiques de l'Insee uniquement.
-        L'origine, l'étymologie et les personnalités associées ne sont pas encore documentées
-        et ne seront ajoutées qu'avec des sources vérifiables.
+      <p v-if="prenom.qualite === 'm'">
+        Fiche <strong>minimale</strong> : statistiques de l'Insee uniquement. Aucune origine, étymologie ou personnalité
+        sourcée n'a été trouvée pour cette graphie exacte ; rien n'est affiché sans source.
       </p>
+      <p v-else-if="prenom.qualite === 'p'">
+        Fiche <strong>partielle</strong> : statistiques de l'Insee et une partie seulement des informations
+        encyclopédiques (étymologie, variantes, personnalités), chacune avec sa source.
+      </p>
+      <p v-else>
+        Fiche <strong>complète</strong> : statistiques de l'Insee, étymologie sourcée, variantes et personnalités.
+      </p>
+      <p>Aucune anecdote n'est encore publiée : aucune source ouverte et fiable n'a été retenue pour ce type de contenu.</p>
       <p>
         Sources : {{ meta.source.organisme }}, {{ meta.source.titre }} ; Insee, statistiques de l'état civil (naissances par sexe) ;
-        IGN, contours administratifs — {{ meta.source.licence }}. <RouterLink to="/methode">Méthode et sources</RouterLink>
+        IGN, contours administratifs — {{ meta.source.licence }} ; Wikidata (CC0) ; Wiktionnaire (CC BY-SA 4.0, textes
+        signalés comme tels). <RouterLink to="/methode">Méthode et sources</RouterLink>
       </p>
     </section>
   </article>
@@ -257,6 +271,9 @@ const pourMille = (x) => `${x.toLocaleString('fr-FR', { maximumFractionDigits: 2
 .fiche { display: grid; gap: 16px; }
 .entete h1 { font-size: 2.6rem; margin: 0 0 8px; color: var(--accent); }
 .sous-titre { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 0 0 8px; }
+.qualite { text-decoration: none; color: var(--texte-doux); }
+.qualite.q-c { color: #2b7a5c; }
+.qualite.q-p { color: #8a6a1f; }
 .tendances { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .etiquette {
   display: inline-block; padding: 3px 12px; border-radius: 999px; background: var(--accent-fond);

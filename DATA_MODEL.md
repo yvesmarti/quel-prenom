@@ -110,3 +110,47 @@ La table `source` contient désormais une ligne par source (prénoms, T35, conto
 | `geo/zones.json` | Noms des régions et départements par code |
 
 Fixture de test : `site/tests/fixtures/indicateurs_python.json` (indicateurs Python d'un échantillon de séries).
+
+## Ajouts de la phase 3 (enrichissement encyclopédique)
+
+### Tables DuckDB
+
+Tables intermédiaires :
+
+| Table | Contenu |
+|---|---|
+| `wiktionnaire_entree` | Entrées « Prénom » du Wiktionnaire reliées à un prénom Insee : mot, section, étymologie (texte), API, origines, variantes (JSON), URL |
+| `wikidata_prenom` | Éléments Wikidata de type prénom : qid, types, libellé, nombre de liens, article Wikipédia en français, graphies (libellés fr/mul/en et libellé natif) |
+| `correspondance_wikidata` | prenom_id, qid, méthode (`graphie_exacte`), statut (`unique`, `ambigu`, `type_incompatible`) |
+| `wikidata_variante`, `wikidata_langue`, `wikidata_personnalite` | Relations P460/P1560, P407 et personnes (P735) des éléments retenus |
+
+Tables du modèle (remplies par `pipeline/encyclo.py`) — elles remplacent les tables vides créées en phase 1 :
+
+| Table | Colonnes |
+|---|---|
+| `etymologie` | prenom_id, texte, source_id, url_source, licence, statut_verification (« source citée, non relue ») |
+| `origine` | prenom_id, langue, justification, source_id, url_source, confiance (« déclarée par la source ») |
+| `prononciation` | prenom_id, api, source_id, url_source |
+| `variante` | prenom_id, libelle, prenom_associe_id (prénom Insee de même graphie, sinon vide), type (`orthographique`, `equivalent_autre_genre`, `diminutif`, `compose`, `apparente`, `reputee_identique`, `traduction`), langue, source_id, url_source |
+| `langue_usage` | prenom_id, langue, source_id, url_source (Wikidata P407 : langue d'usage, pas d'origine) |
+| `personnalite` | prenom_id, qid, nom, presentation (description Wikidata), naissance, deces, domaines, url (Wikipédia en français), nb_liens, score_pertinence (= nb_liens), source_id |
+| `lien_externe` | prenom_id, type (`wiktionnaire`, `wikidata`, `wikipedia`), url, libelle |
+| `fiche_qualite` | prenom_id, nombres d'éléments par type, niveau (`complete`, `partielle`, `minimale`) |
+| `anecdote` | inchangée, vide : aucune source ouverte et fiable retenue |
+
+`prenom.statut_validation` vaut `enrichi` pour les fiches partielles ou complètes, `statistique_seule` sinon.
+
+**Règle de qualité** : *complète* = au moins une étymologie, une variante et une personnalité ; *partielle* = au moins
+un élément encyclopédique sourcé ; *minimale* = statistiques Insee seulement.
+
+**Règle des personnalités** : humains (Q5) dont P735 pointe vers un élément prénom retenu, en premier prénom quand
+l'ordre (qualificatif P1545) est indiqué ; article sur Wikipédia en français ; au moins 10 liens vers des projets
+Wikimédia ; les 8 plus liés par élément, puis par prénom Insee (dédoublonnés). Score de pertinence = nombre de liens.
+
+### Fichiers publiés
+
+| Fichier | Contenu | Licence |
+|---|---|---|
+| `index.v1.json` | + colonne `qualite` : `c`, `p` ou `m` | Etalab |
+| `encyclo/<lot>.json` | `prenoms.<id>` : `wikidata` [{qid, libelle, statut, article}], `langues`, `variantes` [{libelle, type, id?, url}], `personnalites` [{qid, nom, presentation, naissance, deces, domaines, url, liens}], `qualite` | CC0 |
+| `wiktionnaire/<lot>.json` | `prenoms.<id>` : `entrees` [{mot, section, etymologie, api, origines, url}], `variantes` [{libelle, type, id?, langue?}] ; en-tête `licence` et `attribution` | CC BY-SA 4.0 |
