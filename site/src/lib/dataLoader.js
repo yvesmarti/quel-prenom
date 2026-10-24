@@ -36,16 +36,48 @@ export function decoderIndex(json) {
   }))
 }
 
+/**
+ * Clé de lot : premières lettres a–z de la forme normalisée (même règle que pipeline/normalize.py).
+ * 2 lettres pour les séries, 3 pour les données géographiques.
+ */
+export function cleLot(norm, longueur = 2) {
+  return (norm.match(/[a-z]/g) || []).slice(0, longueur).join('') || '_'
+}
+
 let indexDecode = null
+let indexParId = null
 export async function chargerIndex() {
   if (!indexDecode) indexDecode = decoderIndex(await charger('index.v1.json'))
   return indexDecode
 }
+/** Map id → prénom de l'index (pour afficher les noms des classements et tendances). */
+export async function chargerIndexParId() {
+  if (!indexParId) indexParId = new Map((await chargerIndex()).map((p) => [p.id, p]))
+  return indexParId
+}
 
 export const chargerMeta = () => charger('meta.json')
+export const chargerTendances = () => charger('tendances.json')
+export const chargerCouverture = () => charger('couverture.json')
+export const chargerClassementAnnee = (annee) => charger(`classements/france/${annee}.json`)
+export const chargerClassementDecennies = () => charger('classements/france-decennies.json')
+export const chargerClassementZone = (niveau, code) => charger(`classements/zones/${niveau}-${code}.json`)
+export const chargerZones = () => charger('geo/zones.json')
+export const chargerTotauxGeo = () => charger('geo/totaux.json')
+export const chargerFondDeCarte = (niveau) => charger(niveau === 'REG' ? 'geo/regions.json' : 'geo/departements.json')
 
-/** Séries nationales { F: [[annee, valeur, rang], …], M: […] } d'un prénom. */
+/** Séries nationales { F: [[annee, valeur, rang], …], M: […], tendances?, vagues? } d'un prénom. */
 export async function chargerSeries(prenom) {
   const lot = await charger(`prenoms/${prenom.lot}.json`)
   return lot.prenoms[prenom.id] || {}
+}
+
+/** Effectifs par zone et décennie { F: { REG: [[code, decennie, valeur]…], DEP: […] }, M: … }. */
+export async function chargerGeoPrenom(prenom) {
+  try {
+    const lot = await charger(`geo/prenoms/g_${cleLot(prenom.norm, 3)}.json`)
+    return lot.prenoms[prenom.id] || {}
+  } catch {
+    return {} // prénom absent des niveaux régional et départemental : pas de fichier
+  }
 }

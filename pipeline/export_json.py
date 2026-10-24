@@ -184,6 +184,10 @@ def exporter_meta(con, sortie, nb_prenoms, nb_lots):
             "SELECT annee, sexe, naissances, champ FROM denominateur ORDER BY annee, sexe").fetchall():
         naissances[annee][sexe] = n
         naissances[annee]["champ"] = champ
+    nb_publies = defaultdict(dict)
+    for annee, sexe, n in con.execute("""SELECT annee, sexe, count(*) FROM statistique
+            WHERE niveau = 'FRANCE' GROUP BY ALL ORDER BY 1, 2""").fetchall():
+        nb_publies[annee][sexe] = n
     couverture = [list(l) for l in con.execute("""SELECT annee, sexe, fichier_france, naissances_metropole,
             naissances_france, ratio, champ FROM couverture ORDER BY annee, sexe""").fetchall()]
     ecrire(sortie / "couverture.json", {
@@ -197,6 +201,7 @@ def exporter_meta(con, sortie, nb_prenoms, nb_lots):
         "nb_prenoms": nb_prenoms,
         "nb_lots": nb_lots,
         "naissances": naissances,
+        "nb_publies": nb_publies,
         "regles": {
             "seuil_mixte": config.SEUIL_MIXTE,
             "arrondi": "Effectifs arrondis par l'Insee au multiple de 5 le plus proche.",
@@ -207,6 +212,7 @@ def exporter_meta(con, sortie, nb_prenoms, nb_lots):
             "evolution_min": config.EVOLUTION_MIN,
             "geo_min_indice": config.GEO_MIN_INDICE,
             "classement_territorial_top": config.CLASSEMENT_TERRITORIAL_TOP,
+            "tendances": config.TENDANCES,
         },
     })
 
