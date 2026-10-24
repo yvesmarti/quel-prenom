@@ -12,14 +12,22 @@
 - [x] Fiche simple : courbe nationale effectif + rang, autres graphies, mention de source
 - [x] Tests : pytest (34) et vitest (9)
 
-## Phase 2 — Statistiques
+## Phase 2 — Statistiques ✅ (24/10/2026)
 
-- Identifier la série officielle des naissances (dénominateur) pour les fréquences pour 1 000.
-- Évolutions 5/10/20 ans, année record, comparaison de prénoms.
-- Tendances (émergents, déclin, retours, vagues) avec définitions mathématiques, seuils et lissage documentés.
-- Cartes régionales et départementales (GeoJSON), Outre-mer traité correctement.
-- Classements top 10/50/100/500 par année, décennie, sexe, territoire.
-- Affiner la règle « mixte » (par période).
+- [x] Dénominateur officiel identifié et intégré : Insee T35 (naissances par sexe), fréquences pour 1 000 depuis 1946
+- [x] Couverture du fichier mesurée et documentée (incomplet avant 1946)
+- [x] Indicateurs de fiche : dernière année, meilleur rang, record, fréquence record, évolutions 5/10/20 ans
+- [x] Tendances chiffrées : émergents, forte progression, déclin, devenus rares, plusieurs vagues, retours
+- [x] Comparaison de prénoms sur la courbe (jusqu'à 4)
+- [x] Cartes régionales et départementales (indice de spécificité, effectifs, par décennie), outre-mer en encarts
+- [x] Classements : par année (officiels) et par décennie (calculés), France / région / département, fin de classement
+- [x] Page Méthode (sources, couverture, définitions)
+- [x] Tests : pytest 52, vitest 18
+
+Reste à faire ou à décider plus tard :
+- Fréquences territoriales officielles : aucune série de naissances par lieu de naissance et par année n'a été trouvée.
+- Règle « mixte » par période (aujourd'hui sur 1900–2025).
+- Volume des fichiers publiés (≈ 50 Mo au total, chargés à la demande) : à optimiser en phase 5 si besoin.
 
 ## Phase 3 — Enrichissement encyclopédique
 

@@ -70,4 +70,4 @@ declin : 598 · devenu_rare : 269 · emergent : 479 · progression : 463 · reto
 - Fonds de carte et totaux : 4 fichier(s), 353 Ko brut, 103 Ko compressé ; plus gros : departements.json (211 Ko)
 - Tendances : 1 fichier(s), 188 Ko brut, 28 Ko compressé ; plus gros : tendances.json (188 Ko)
 - Couverture : 1 fichier(s), 12 Ko brut, 4 Ko compressé ; plus gros : couverture.json (12 Ko)
-- Meta : 1 fichier(s), 7 Ko brut, 2 Ko compressé ; plus gros : meta.json (7 Ko)
+- Meta : 1 fichier(s), 10 Ko brut, 3 Ko compressé ; plus gros : meta.json (10 Ko)

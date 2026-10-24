@@ -74,4 +74,39 @@ Une ligne par prénom, triées par total décroissant. `accent` et `compose` val
   "format_serie": ["annee","valeur_arrondie","rang_officiel"],
   "prenoms": { "léa": { "F": [[1900,935,51],[1901,1100,48], ...] } } }
 ```
-Séries **nationales** uniquement en phase 1. Le régional et le départemental sont en base, publiés en phase 2.
+Séries **nationales**. Depuis la phase 2, chaque prénom peut aussi porter `"tendances": {"F": ["retour", "vagues"]}`
+et `"vagues": {"F": [[1900, 5], [2024, 1]]}` (année et rang lissé des sommets). Les autres indicateurs sont
+recalculés par le site (voir `STATISTIQUES.md`).
+
+## Ajouts de la phase 2
+
+### Tables DuckDB
+
+| Table | Contenu |
+|---|---|
+| `naissances_officielles` | Insee T35 : annee, sexe, champ (`metropole` / `france`), naissances |
+| `denominateur` | Dénominateur retenu pour chaque année ≥ 1946 et sexe (métropole avant 1994, France ensuite) |
+| `total_fichier` | Somme des effectifs publiés et nombre de prénoms par niveau, territoire, année, sexe |
+| `couverture` | Somme nationale du fichier / naissances officielles, par année et sexe |
+| `indicateur` | Par prénom et sexe : indicateurs et tendances (JSON) |
+| `tendance` | Une ligne par prénom × sexe × catégorie : score de tri et détails chiffrés (JSON) |
+| `geo_decennie` | Effectifs par prénom, sexe, niveau (REG/DEP), territoire et décennie |
+
+La table `source` contient désormais une ligne par source (prénoms, T35, contours des régions et des départements).
+
+### Fichiers publiés
+
+| Fichier | Contenu |
+|---|---|
+| `meta.json` | + `sources` (toutes), `naissances` (dénominateurs par année ≥ 1946), `nb_publies` (prénoms publiés par année et sexe), règles et seuils (`regles.tendances`…) |
+| `tendances.json` | `categories.<cat>` = liste `[id, sexe, score, détails]` triée par score décroissant |
+| `couverture.json` | Colonnes `annee, sexe, fichier_france, naissances_metropole, naissances_france, ratio, champ` |
+| `classements/france/<annee>.json` | `F`/`M` : `top` = `[[id, effectif]…]` (rang = position), `fin` = `[[id, effectif, rang]…]`, `nb_publies` |
+| `classements/france-decennies.json` | `decennies.<dec>.F/M` = `[[id, somme des effectifs]…]` (classement calculé) |
+| `classements/zones/<REG|DEP>-<code>.json` | `annees.<a>.F/M` (rangs officiels, top 50 régions / 20 départements) et `decennies.<dec>.F/M` (calculé) |
+| `geo/prenoms/g_<lot3>.json` | `prenoms.<id>.F/M.REG/DEP` = `[[code, decennie, effectif]…]` ; lot de 3 lettres, préfixe `g_` car `aux`, `con`, `nul`, `prn` sont des noms de fichiers interdits sous Windows |
+| `geo/totaux.json` | `totaux.REG/DEP.<code>.F/M.<decennie>` = somme des effectifs publiés (dénominateur des parts locales) |
+| `geo/regions.json`, `geo/departements.json` | GeoJSON simplifiés, propriétés `code`, `name`, `outre_mer` |
+| `geo/zones.json` | Noms des régions et départements par code |
+
+Fixture de test : `site/tests/fixtures/indicateurs_python.json` (indicateurs Python d'un échantillon de séries).
