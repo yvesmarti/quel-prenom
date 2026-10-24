@@ -61,7 +61,10 @@ def est_compose(prenom_insee):
     return "-" in prenom_insee
 
 
-def cle_lot(prenom_insee):
-    """Nom du fichier de détails : 2 premières lettres normalisées (ex. « le » pour Léa)."""
+def cle_lot(prenom_insee, longueur=2):
+    """Nom du fichier de détails : premières lettres normalisées (ex. « le » pour Léa).
+
+    Les séries utilisent 2 lettres, les données géographiques (plus lourdes) 3 lettres.
+    """
     lettres = [c for c in normaliser(prenom_insee) if "a" <= c <= "z"]
-    return "".join(lettres[:2]) or "_"
+    return "".join(lettres[:longueur]) or "_"

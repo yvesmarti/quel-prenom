@@ -91,7 +91,7 @@ def test_lots_de_details(index):
             series = contenu["prenoms"][p["id"]]
             assert sum(v for _, v, _ in series.get("F", [])) == p["total_f"]
             assert sum(v for _, v, _ in series.get("M", [])) == p["total_m"]
-            for points in series.values():
+            for points in (series.get("F", []), series.get("M", [])):
                 annees = [a for a, _, _ in points]
                 assert annees == sorted(set(annees))
 

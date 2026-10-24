@@ -1,4 +1,7 @@
-"""Étape 1 : télécharge le fichier Parquet INSEE et enregistre sa somme de contrôle.
+"""Étape 1 : télécharge les fichiers sources et enregistre leur somme de contrôle.
+
+Sources : voir config.SOURCES. Le manifeste data/raw/manifest.json garde, pour chaque
+fichier, l'URL, la taille, le SHA-256 et la date de récupération.
 
 Usage : python pipeline/download.py [--force]
 """
@@ -10,7 +13,7 @@ from datetime import datetime, timezone
 
 import config
 
-USER_AGENT = "Prenoscope/0.1 (projet personnel non commercial)"
+USER_AGENT = "Prenoscope/0.2 (projet personnel non commercial)"
 
 
 def sha256(chemin):
@@ -21,31 +24,41 @@ def sha256(chemin):
     return h.hexdigest()
 
 
+def lire_manifeste():
+    if not config.MANIFESTE.exists():
+        return {}
+    contenu = json.loads(config.MANIFESTE.read_text(encoding="utf-8"))
+    if "fichiers" not in contenu:  # ancien format (phase 1) : une seule source
+        contenu = {"fichiers": {contenu["source"]: contenu}}
+    return contenu["fichiers"]
+
+
 def telecharger(force=False):
-    config.DOSSIER_RAW.mkdir(parents=True, exist_ok=True)
-    if config.FICHIER_PARQUET.exists() and config.MANIFESTE.exists() and not force:
-        print(f"Déjà présent : {config.FICHIER_PARQUET.name} (utiliser --force pour retélécharger)")
-        return json.loads(config.MANIFESTE.read_text(encoding="utf-8"))
-
-    print(f"Téléchargement de {config.URL_PARQUET} …")
-    requete = urllib.request.Request(config.URL_PARQUET, headers={"User-Agent": USER_AGENT})
-    temporaire = config.FICHIER_PARQUET.with_suffix(".part")
-    with urllib.request.urlopen(requete, timeout=120) as reponse, open(temporaire, "wb") as f:
-        while bloc := reponse.read(1 << 20):
-            f.write(bloc)
-    temporaire.replace(config.FICHIER_PARQUET)
-
-    manifeste = {
-        "source": config.SOURCE_ID,
-        "url": config.URL_PARQUET,
-        "page": config.PAGE_INSEE,
-        "fichier": config.FICHIER_PARQUET.name,
-        "taille_octets": config.FICHIER_PARQUET.stat().st_size,
-        "sha256": sha256(config.FICHIER_PARQUET),
-        "recupere_le": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-    }
-    config.MANIFESTE.write_text(json.dumps(manifeste, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"OK : {manifeste['taille_octets']:,} octets, sha256 {manifeste['sha256'][:16]}…")
+    manifeste = lire_manifeste()
+    for source in config.SOURCES:
+        chemin = config.chemin_source(source["id"])
+        if chemin.exists() and source["id"] in manifeste and not force:
+            print(f"Déjà présent : {source['fichier']}")
+            continue
+        print(f"Téléchargement de {source['url']} …")
+        chemin.parent.mkdir(parents=True, exist_ok=True)
+        requete = urllib.request.Request(source["url"], headers={"User-Agent": USER_AGENT})
+        temporaire = chemin.with_suffix(chemin.suffix + ".part")
+        with urllib.request.urlopen(requete, timeout=120) as reponse, open(temporaire, "wb") as f:
+            while bloc := reponse.read(1 << 20):
+                f.write(bloc)
+        temporaire.replace(chemin)
+        manifeste[source["id"]] = {
+            "source": source["id"],
+            "url": source["url"],
+            "page": source["page"],
+            "fichier": source["fichier"],
+            "taille_octets": chemin.stat().st_size,
+            "sha256": sha256(chemin),
+            "recupere_le": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        print(f"  OK : {manifeste[source['id']]['taille_octets']:,} octets")
+    config.MANIFESTE.write_text(json.dumps({"fichiers": manifeste}, indent=2, ensure_ascii=False), encoding="utf-8")
     return manifeste
 
 

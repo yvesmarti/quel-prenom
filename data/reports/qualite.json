@@ -1,9 +1,275 @@
 {
+  "sources": {
+    "insee-prenoms-2025": {
+      "url": "https://www.insee.fr/fr/statistiques/fichier/8595130/prenoms-2025.parquet",
+      "taille_octets": 18946679,
+      "sha256": "f78a41de5b4aa77af3f4ba2fbf29fcdf428250ae9a49a019fb61246269075070",
+      "recupere_le": "2026-10-24T14:53:37+00:00"
+    },
+    "insee-naissances-t35-2025": {
+      "url": "https://www.insee.fr/fr/statistiques/fichier/9000187/t35.xlsx",
+      "taille_octets": 33548,
+      "sha256": "d14c2cc2faa18eb72e64fbf594dc3ebca11636b83129a0ad2a315016fd3174cf",
+      "recupere_le": "2026-10-24T15:14:36+00:00"
+    },
+    "ign-contours-departements-2018": {
+      "url": "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-avec-outre-mer.geojson",
+      "taille_octets": 3722544,
+      "sha256": "0c331e85eef244d8014f68a4c256bb732e28776aceec53ddf849624f2eb6c163",
+      "recupere_le": "2026-10-24T15:14:36+00:00"
+    },
+    "ign-contours-regions-2018": {
+      "url": "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions-avec-outre-mer.geojson",
+      "taille_octets": 1746989,
+      "sha256": "a573b672264184d11a2f98220867653b092fe3a964433e30e3a0a4708d72d167",
+      "recupere_le": "2026-10-24T15:14:36+00:00"
+    }
+  },
   "fichier_source": {
     "url": "https://www.insee.fr/fr/statistiques/fichier/8595130/prenoms-2025.parquet",
     "taille_octets": 18946679,
     "sha256": "f78a41de5b4aa77af3f4ba2fbf29fcdf428250ae9a49a019fb61246269075070",
     "recupere_le": "2026-10-24T14:53:37+00:00"
+  },
+  "couverture_echantillon": [
+    [
+      1901,
+      "F",
+      0.5704,
+      "metropole"
+    ],
+    [
+      1901,
+      "M",
+      0.4162,
+      "metropole"
+    ],
+    [
+      1920,
+      "F",
+      0.8098,
+      "metropole"
+    ],
+    [
+      1920,
+      "M",
+      0.7333,
+      "metropole"
+    ],
+    [
+      1940,
+      "F",
+      0.9291,
+      "metropole"
+    ],
+    [
+      1940,
+      "M",
+      0.895,
+      "metropole"
+    ],
+    [
+      1945,
+      "F",
+      0.9282,
+      "metropole"
+    ],
+    [
+      1945,
+      "M",
+      0.8956,
+      "metropole"
+    ],
+    [
+      1946,
+      "F",
+      1.0245,
+      "metropole"
+    ],
+    [
+      1946,
+      "M",
+      1.0215,
+      "metropole"
+    ],
+    [
+      1960,
+      "F",
+      1.0311,
+      "metropole"
+    ],
+    [
+      1960,
+      "M",
+      1.03,
+      "metropole"
+    ],
+    [
+      1980,
+      "F",
+      1.0083,
+      "metropole"
+    ],
+    [
+      1980,
+      "M",
+      1.0062,
+      "metropole"
+    ],
+    [
+      1993,
+      "F",
+      1.0028,
+      "metropole"
+    ],
+    [
+      1993,
+      "M",
+      1.0044,
+      "metropole"
+    ],
+    [
+      1994,
+      "F",
+      0.961,
+      "france"
+    ],
+    [
+      1994,
+      "M",
+      0.9633,
+      "france"
+    ],
+    [
+      2000,
+      "F",
+      0.9594,
+      "france"
+    ],
+    [
+      2000,
+      "M",
+      0.9658,
+      "france"
+    ],
+    [
+      2010,
+      "F",
+      0.9384,
+      "france"
+    ],
+    [
+      2010,
+      "M",
+      0.9455,
+      "france"
+    ],
+    [
+      2020,
+      "F",
+      0.9177,
+      "france"
+    ],
+    [
+      2020,
+      "M",
+      0.9256,
+      "france"
+    ],
+    [
+      2025,
+      "F",
+      0.9105,
+      "france"
+    ],
+    [
+      2025,
+      "M",
+      0.9203,
+      "france"
+    ]
+  ],
+  "tendances": {
+    "declin": 598,
+    "devenu_rare": 269,
+    "emergent": 479,
+    "progression": 463,
+    "retour": 26,
+    "vagues": 111
+  },
+  "fichiers_publies_phase2": {
+    "classements nationaux": {
+      "nb": 126,
+      "brut": 2187222,
+      "gzip": 758939,
+      "plus_gros": [
+        "1950.json",
+        17889
+      ]
+    },
+    "classements nationaux par décennie": {
+      "nb": 1,
+      "brut": 45300,
+      "gzip": 14369,
+      "plus_gros": [
+        "france-decennies.json",
+        45300
+      ]
+    },
+    "classements territoriaux": {
+      "nb": 119,
+      "brut": 12185758,
+      "gzip": 2302835,
+      "plus_gros": [
+        "REG-11.json",
+        223802
+      ]
+    },
+    "données géographiques par prénom": {
+      "nb": 2638,
+      "brut": 19114361,
+      "gzip": 4099642,
+      "plus_gros": [
+        "g_mar.json",
+        882542
+      ]
+    },
+    "fonds de carte et totaux": {
+      "nb": 4,
+      "brut": 361565,
+      "gzip": 104978,
+      "plus_gros": [
+        "departements.json",
+        216231
+      ]
+    },
+    "tendances": {
+      "nb": 1,
+      "brut": 192265,
+      "gzip": 28581,
+      "plus_gros": [
+        "tendances.json",
+        192265
+      ]
+    },
+    "couverture": {
+      "nb": 1,
+      "brut": 12349,
+      "gzip": 3642,
+      "plus_gros": [
+        "couverture.json",
+        12349
+      ]
+    },
+    "meta": {
+      "nb": 1,
+      "brut": 7007,
+      "gzip": 2013,
+      "plus_gros": [
+        "meta.json",
+        7007
+      ]
+    }
   },
   "nb_lignes_brutes": 6622949,
   "lignes_par_niveau": {
@@ -104,11 +370,11 @@
   },
   "taille_lots": {
     "nb": 353,
-    "brut": 11236392,
-    "gzip": 3481055,
+    "brut": 11350690,
+    "gzip": 3516762,
     "plus_gros": [
       "ma.json",
-      877271
+      888598
     ]
   },
   "anomalies_inspection": {

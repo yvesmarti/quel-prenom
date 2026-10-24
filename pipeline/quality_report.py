@@ -24,14 +24,35 @@ def rapport():
     con = duckdb.connect(str(config.BASE), read_only=True)
     val = lambda sql: con.execute(sql).fetchone()[0]
     inspection = json.loads((config.DOSSIER_RAPPORTS / "inspection.json").read_text(encoding="utf-8"))
-    manifeste = json.loads(config.MANIFESTE.read_text(encoding="utf-8"))
+    manifeste = json.loads(config.MANIFESTE.read_text(encoding="utf-8"))["fichiers"]
 
     index = list(config.DOSSIER_PUBLIC.glob("index.v*.json"))
     lots = sorted((config.DOSSIER_PUBLIC / "prenoms").glob("*.json"), key=lambda p: p.stat().st_size)
     t_index, t_lots = taille(index), taille(lots)
+    publies = {}
+    for nom, motif in (("classements nationaux", "classements/france*/**/*.json"),
+                       ("classements nationaux par décennie", "classements/france-decennies.json"),
+                       ("classements territoriaux", "classements/zones/*.json"),
+                       ("données géographiques par prénom", "geo/prenoms/*.json"),
+                       ("fonds de carte et totaux", "geo/*.json"),
+                       ("tendances", "tendances.json"), ("couverture", "couverture.json"), ("meta", "meta.json")):
+        fichiers = sorted(set(config.DOSSIER_PUBLIC.glob(motif)), key=lambda p: p.stat().st_size)
+        if fichiers:
+            b, g = taille(fichiers)
+            publies[nom] = {"nb": len(fichiers), "brut": b, "gzip": g,
+                            "plus_gros": [fichiers[-1].name, fichiers[-1].stat().st_size]}
+
+    couverture = con.execute("""SELECT annee, sexe, ratio, champ FROM couverture
+        WHERE annee IN (1901, 1920, 1940, 1945, 1946, 1960, 1980, 1993, 1994, 2000, 2010, 2020, 2025)
+        ORDER BY annee, sexe""").fetchall()
+    q_tendances = dict(con.execute("SELECT categorie, count(*) FROM tendance GROUP BY 1 ORDER BY 1").fetchall())
 
     q = {
-        "fichier_source": {k: manifeste[k] for k in ("url", "taille_octets", "sha256", "recupere_le")},
+        "sources": {k: {c: m[c] for c in ("url", "taille_octets", "sha256", "recupere_le")} for k, m in manifeste.items()},
+        "fichier_source": {k: manifeste[config.SOURCE_ID][k] for k in ("url", "taille_octets", "sha256", "recupere_le")},
+        "couverture_echantillon": [list(c) for c in couverture],
+        "tendances": q_tendances,
+        "fichiers_publies_phase2": publies,
         "nb_lignes_brutes": inspection["nb_lignes"],
         "lignes_par_niveau": inspection["lignes_par_niveau"],
         "annees": [inspection["annee_min"], inspection["annee_max"]],
@@ -64,10 +85,22 @@ def rapport():
 
 Généré automatiquement par `pipeline/quality_report.py`. Ne pas modifier à la main.
 
-## Fichier source
-- URL : {q['fichier_source']['url']}
-- Taille : {q['fichier_source']['taille_octets']:,} octets — SHA-256 `{q['fichier_source']['sha256']}`
-- Récupéré le : {q['fichier_source']['recupere_le']}
+## Fichiers sources
+""" + "\n".join(f"- `{k}` : {s['url']} — {s['taille_octets']:,} octets — SHA-256 `{s['sha256'][:16]}…` — récupéré le {s['recupere_le']}"
+                for k, s in q["sources"].items()) + """
+
+## Couverture du fichier des prénoms (somme des effectifs nationaux / naissances officielles T35)
+Champ du dénominateur : métropole avant 1994, France entière ensuite. Détail complet : `site/public/data/couverture.json`.
+
+| Année | Filles | Garçons | Champ T35 |
+|---|---|---|---|
+""" + "\n".join(f"| {a} | {dict((s, r) for aa, s, r, _ in q['couverture_echantillon'] if aa == a).get('F', 0):.1%} | "
+                f"{dict((s, r) for aa, s, r, _ in q['couverture_echantillon'] if aa == a).get('M', 0):.1%} | "
+                f"{next(c for aa, _, _, c in q['couverture_echantillon'] if aa == a)} |"
+                for a in sorted({c[0] for c in q["couverture_echantillon"]})) + f"""
+
+## Tendances détectées (définitions : STATISTIQUES.md)
+""" + " · ".join(f"{k} : {v}" for k, v in q["tendances"].items()) + f"""
 
 ## Volumes constatés
 - Lignes brutes : {q['nb_lignes_brutes']:,} (France {q['lignes_par_niveau']['FRANCE']:,} · régions {q['lignes_par_niveau']['REG']:,} · départements {q['lignes_par_niveau']['DEP']:,})
@@ -95,7 +128,8 @@ Généré automatiquement par `pipeline/quality_report.py`. Ne pas modifier à l
 ## Fichiers publiés
 - Index : {ko(q['taille_index']['brut'])} brut, {ko(q['taille_index']['gzip'])} compressé (gzip)
 - Détails : {q['taille_lots']['nb']} lots, {ko(q['taille_lots']['brut'])} brut au total, {ko(q['taille_lots']['gzip'])} compressé ; plus gros lot : {q['taille_lots']['plus_gros'][0]} ({ko(q['taille_lots']['plus_gros'][1])})
-"""
+""" + "\n".join(f"- {nom.capitalize()} : {p['nb']} fichier(s), {ko(p['brut'])} brut, {ko(p['gzip'])} compressé ; "
+                f"plus gros : {p['plus_gros'][0]} ({ko(p['plus_gros'][1])})" for nom, p in q["fichiers_publies_phase2"].items()) + "\n"
     (config.DOSSIER_RAPPORTS / "qualite.md").write_text(md, encoding="utf-8")
     print(f"Rapport OK : data/reports/qualite.md")
     con.close()

@@ -15,6 +15,7 @@ import duckdb
 
 import config
 import normalize
+import xlsx
 
 SCHEMA_FUTUR = """
 CREATE TABLE origine (id INTEGER PRIMARY KEY, prenom_id VARCHAR, langue VARCHAR, culture VARCHAR,
@@ -29,6 +30,25 @@ CREATE TABLE anecdote (id INTEGER PRIMARY KEY, prenom_id VARCHAR, titre VARCHAR,
 """
 
 
+def lire_t35():
+    """Lignes (annee, sexe, champ, naissances) du tableau T35 de l'Insee.
+
+    Feuille FM = France métropolitaine (depuis 1901), FR = France entière (depuis 1994).
+    Les cellules « nd » (non disponible) sont ignorées.
+    """
+    lignes = []
+    for feuille, champ in (("FM", "metropole"), ("FR", "france")):
+        for r in xlsx.lire(config.FICHIER_T35)[feuille]:
+            if len(r) < 4 or not (isinstance(r[0], str) and r[0].isdigit()):
+                continue
+            garcons, filles = r[2], r[3]
+            if isinstance(garcons, float) and isinstance(filles, float):
+                lignes += [(int(r[0]), "M", champ, int(garcons)), (int(r[0]), "F", champ, int(filles))]
+    if not lignes:
+        raise SystemExit("T35 : aucune ligne lue, le format du fichier a peut-être changé")
+    return lignes
+
+
 def sexe_usage(total_f, total_m):
     """F, M ou X (mixte) selon la règle documentée SEUIL_MIXTE (cumul national 1900-2025)."""
     total = total_f + total_m
@@ -38,7 +58,7 @@ def sexe_usage(total_f, total_m):
 
 
 def construire():
-    manifeste = json.loads(config.MANIFESTE.read_text(encoding="utf-8"))
+    manifeste = json.loads(config.MANIFESTE.read_text(encoding="utf-8"))["fichiers"]
     config.BASE.parent.mkdir(parents=True, exist_ok=True)
     config.BASE.unlink(missing_ok=True)
     con = duckdb.connect(str(config.BASE))
@@ -48,12 +68,19 @@ def construire():
         SELECT * FROM read_parquet('{config.FICHIER_PARQUET.as_posix()}')""")
 
     con.execute("""CREATE TABLE source (id VARCHAR PRIMARY KEY, organisme VARCHAR, titre VARCHAR,
-        url VARCHAR, fichier_url VARCHAR, licence VARCHAR, millesime INTEGER,
+        url VARCHAR, fichier_url VARCHAR, licence VARCHAR, publication VARCHAR,
         date_recuperation VARCHAR, sha256 VARCHAR)""")
-    con.execute("INSERT INTO source VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-        config.SOURCE_ID, "Insee", "Fichier des prénoms – Édition 2025", config.PAGE_INSEE,
-        config.URL_PARQUET, config.LICENCE_INSEE, config.MILLESIME,
-        manifeste["recupere_le"], manifeste["sha256"]])
+    for s in config.SOURCES:
+        m = manifeste[s["id"]]
+        con.execute("INSERT INTO source VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+            s["id"], s["organisme"], s["titre"], s["page"], s["url"], s["licence"],
+            s["publication"], m["recupere_le"], m["sha256"]])
+
+    print("Naissances officielles (T35)…")
+    con.execute("""CREATE TABLE naissances_officielles (annee INTEGER, sexe VARCHAR, champ VARCHAR,
+        naissances INTEGER, source_id VARCHAR)""")
+    con.executemany("INSERT INTO naissances_officielles VALUES (?, ?, ?, ?, 'insee-naissances-t35-2025')",
+                    lire_t35())
 
     print("Table prenom…")
     lignes = con.execute("""
