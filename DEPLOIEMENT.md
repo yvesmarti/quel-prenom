@@ -12,13 +12,16 @@ Avec un compte GitHub gratuit, GitHub Pages exige un dépôt **public** : tout l
 Ne sont **pas** envoyés : les données brutes (`data/raw/`), la base de travail (`data/work/`), l'environnement Python.
 
 **Adresse e-mail des commits** : chaque commit enregistre le nom et l'adresse configurés dans Git ; ils seront
-visibles publiquement. Vérifier avec :
+visibles publiquement. Dans ce projet, l'adresse est volontairement **vide** (décision du 24/10/2026) : les commits
+apparaissent sous le nom `yves_marti <>` et l'historique a été réécrit en conséquence avant toute publication.
+Ce réglage ne concerne que ce projet (`git config user.email ""`). Vérifier avec :
 
 ```
 git log --format="%an <%ae>" | sort -u
 ```
 
-Pour publier sous une adresse anonyme fournie par GitHub, la remplacer **avant le premier envoi** (voir la fin de ce guide).
+Conséquence : sur GitHub, les commits ne sont pas reliés à votre compte (pas d'avatar à côté), ce qui n'empêche
+ni l'envoi ni la publication.
 
 ## Étape 1 — Créer le dépôt sur GitHub (une seule fois)
 
