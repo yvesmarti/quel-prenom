@@ -69,7 +69,8 @@ def texte_enrichissement(e):
         f"{c.get('unique', 0):,} · ambiguë {c.get('ambigu', 0):,} · type incompatible écarté {c.get('type_incompatible', 0):,}",
         f"- Exemples de correspondances ambiguës (plusieurs éléments de même graphie) : {', '.join(e['exemples_ambigus_wikidata'])}",
         f"- Personnalités non récupérées (délai dépassé) : {len(wd.get('echecs_personnalites', []))} élément(s) "
-        f"— interrogation du {wd.get('debut', '?')} au {wd.get('fin', '?')}",
+        f"— Wikidata interrogé le {wd.get('interrogation', wd.get('debut', '?'))}"
+        + ("" if wd.get("personnalites_recuperees") else " ; personnalités pas encore récupérées"),
         "- Anecdotes : 0 (aucune source ouverte et fiable retenue)",
     ])
 

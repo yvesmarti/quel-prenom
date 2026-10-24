@@ -170,7 +170,9 @@ def test_meta_naissances(con):
     meta = lire("meta.json")
     assert str(config.ANNEE_DEBUT_FREQUENCES) in meta["naissances"]
     assert "1945" not in meta["naissances"]
-    assert {s["id"] for s in meta["sources"]} == {s["id"] for s in config.SOURCES}
+    attendues = {s["id"] for s in config.SOURCES} | {config.SOURCE_WIKIDATA["id"]}
+    assert {s["id"] for s in meta["sources"]} <= attendues
+    assert {s["id"] for s in config.SOURCES} <= {s["id"] for s in meta["sources"]}
 
 
 @donnees

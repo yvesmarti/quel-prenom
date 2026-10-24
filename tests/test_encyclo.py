@@ -59,7 +59,7 @@ def test_etymologies_sourcees_et_sous_licence(con):
 
 
 def test_personnalites_selon_la_regle(con):
-    assert val(con, "SELECT max(n) FROM (SELECT count(*) n FROM personnalite GROUP BY prenom_id)") <= 8
+    assert val(con, "SELECT coalesce(max(n), 0) FROM (SELECT count(*) n FROM personnalite GROUP BY prenom_id)") <= 8
     assert val(con, f"""SELECT count(*) FROM personnalite WHERE nb_liens < {wikidata.PERSONNALITES_MIN_LIENS}
         OR url NOT LIKE 'https://fr.wikipedia.org/wiki/%' OR nom IS NULL""") == 0
 
@@ -88,3 +88,13 @@ def test_fichiers_publies_par_licence(con):
         contenu = json.loads(f.read_text(encoding="utf-8"))
         assert "CC0" in contenu["licence"]
         assert all("etymologie" not in json.dumps(p) for p in contenu["prenoms"].values())
+
+
+def test_etymologie_limitee_au_prenom():
+    import wiktionnaire as w
+    assert w.etymologie_du_prenom(["(Prénom) De jade.\n(Cours d’eau) De l’allemand Jade."]) == "De jade."
+    plusieurs = ["(Prénom 1) (Nom de famille) De l’arabe A.", "(Prénom 2) De l’hébreu B."]
+    assert w.etymologie_du_prenom(plusieurs, "Prénom 1") == "De l’arabe A."
+    assert w.etymologie_du_prenom(plusieurs, "Prénom 2") == "De l’hébreu B."
+    assert w.etymologie_du_prenom(["(Nom de famille) Nom allemand."]) is None
+    assert w.etymologie_du_prenom(["Du latin leo (« lion »)."]) == "Du latin leo (« lion »)."

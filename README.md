@@ -16,6 +16,7 @@ Voir [ROADMAP.md](ROADMAP.md) pour la suite.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Organisation des dossiers, choix techniques, performances |
 | [SOURCES.md](SOURCES.md) | Sources, licences, particularités constatées dans les données |
 | [DATA_MODEL.md](DATA_MODEL.md) | Tables, fichiers publiés, règles (mixte, composé, accents…) |
+| [DEPLOIEMENT.md](DEPLOIEMENT.md) | Mise en ligne sur GitHub Pages, pas à pas |
 | [LICENCES.md](LICENCES.md) | Licence de chaque famille de fichiers publiés (Etalab, CC0, CC BY-SA 4.0) |
 | [STATISTIQUES.md](STATISTIQUES.md) | Définitions : fréquences, évolutions, tendances, classements, géographie, couverture |
 | [ROADMAP.md](ROADMAP.md) | Phases du projet |
@@ -65,7 +66,7 @@ Toutes les commandes se lancent depuis la racine du projet, sauf indication cont
 | Tests du site | `npm test` (dans `site/`) | Vérifie recherche et filtres |
 | Build de production | `npm run build` (dans `site/`) | Produit `site/dist/`, prêt à publier |
 | Enrichissements | — | Phase 3 (Wikidata, Wiktionnaire), pas encore disponible |
-| Publier | — | Phase 5 (GitHub Pages via GitHub Actions), pas encore configuré |
+| Publier | `git push` | Mise en ligne automatique sur GitHub Pages : voir [DEPLOIEMENT.md](DEPLOIEMENT.md) |
 
 Sous macOS/Linux, remplacer `.venv\Scripts\python` par `.venv/bin/python`.
 
@@ -80,3 +81,7 @@ Sous macOS/Linux, remplacer `.venv\Scripts\python` par `.venv/bin/python`.
 Données : Insee, Fichier des prénoms – Édition 2025 ; Insee, statistiques de l'état civil (naissances par sexe, T35) ;
 IGN, Admin Express COG 2018 (contours). Toutes sous Licence Ouverte / Open Licence 2.0 (Etalab).
 Mention « Source : Insee » avec la date de mise à jour — affichée en pied de page et sur la page Méthode du site.
+
+## Licence du code
+
+EUPL 1.2 (fichier [LICENSE](LICENSE)). Les données publiées ont leurs propres licences : voir [LICENCES.md](LICENCES.md).

@@ -163,7 +163,11 @@ onBeforeUnmount(() => { window.removeEventListener('resize', redimensionner); gr
             compris) et le type compatible (prénom féminin, masculin ou épicène) ; si plusieurs éléments conviennent, la fiche le signale.</li>
           <li><strong>Personnalités</strong> : personnes dont c'est le prénom (le premier, quand l'ordre est connu), ayant un article
             sur Wikipédia en français et au moins 10 articles dans les projets Wikimédia ; les 8 plus présentes sont retenues.
-            Porter un prénom ne suffit pas : ce critère de notoriété, imparfait mais vérifiable, sert de sélection.</li>
+            Porter un prénom ne suffit pas : ce critère de notoriété, imparfait mais vérifiable, sert de sélection.
+            <template v-if="!meta.enrichissement?.personnalites">
+              <strong>Pas encore disponibles dans cette version</strong> : elles seront ajoutées dans une prochaine mise à
+              jour ; aucune fiche ne peut donc être « complète » pour l'instant.
+            </template></li>
           <li><strong>Qualité de la fiche</strong> : <em>complète</em> = étymologie sourcée, au moins une variante et une
             personnalité ; <em>partielle</em> = au moins une information encyclopédique sourcée ; <em>minimale</em> = statistiques
             de l'Insee seulement. Une information absente n'est jamais remplacée par une supposition.</li>

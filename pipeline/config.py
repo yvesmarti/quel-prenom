@@ -83,7 +83,7 @@ SOURCES_PAR_ID = {s["id"]: s for s in SOURCES}
 SOURCE_WIKIDATA = {
     "id": "wikidata",
     "organisme": "Wikidata (contributeurs)",
-    "titre": "Wikidata – éléments « prénom » et personnes",
+    "titre": "Wikidata – éléments « prénom » (variantes, langues d'usage)",
     "page": "https://www.wikidata.org/",
     "url": "https://query.wikidata.org/sparql",
     "licence": "CC0 1.0 (domaine public)",
@@ -92,6 +92,8 @@ WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
 WIKIDATA_USER_AGENT = "Prenoscope/0.3 (projet personnel non commercial ; https://github.com/) python-urllib"
 DOSSIER_CACHE_WIKIDATA = DOSSIER_RAW / "wikidata"
 LICENCE_WIKTIONNAIRE = "CC BY-SA 4.0"
+# Personnalités : désactivé pour la première version en ligne (requêtes trop longues, méthode à revoir).
+WIKIDATA_PERSONNALITES = False
 
 
 def chemin_source(source_id):

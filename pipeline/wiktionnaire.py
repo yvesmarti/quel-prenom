@@ -45,6 +45,38 @@ def extraire():
     print(f"Wiktionnaire : {n:,} entrées « Prénom » en français extraites")
 
 
+QUALIFICATIF = re.compile(r"^\(([^()]*)\)\s*")
+
+
+def etymologie_du_prenom(textes, titre_section="Prénom"):
+    """Garde les paragraphes d'étymologie qui concernent ce prénom.
+
+    Le Wiktionnaire regroupe parfois sur une même page les étymologies de plusieurs sens, avec
+    des qualificatifs en tête de paragraphe : « (Prénom) De jade. » / « (Cours d'eau…) De
+    l'allemand Jade. », ou « (Prénom 1) (Nom de famille) De l'arabe… ». Règle :
+    - paragraphe sans qualificatif : gardé ;
+    - sinon gardé seulement si un qualificatif désigne le prénom, et, s'il est numéroté
+      (« Prénom 1 »), seulement pour l'entrée de même numéro ;
+    - les qualificatifs sont retirés du texte gardé.
+    """
+    numero = titre_section.removeprefix("Prénom").strip()
+    gardes = []
+    for texte in textes:
+        for paragraphe in texte.split("\n"):
+            paragraphe = paragraphe.strip()
+            qualificatifs = []
+            while m := QUALIFICATIF.match(paragraphe):
+                qualificatifs.append(m.group(1).strip())
+                paragraphe = paragraphe[m.end():]
+            if qualificatifs:
+                prenoms = [q.removeprefix("Prénom").strip() for q in qualificatifs if q.startswith("Prénom")]
+                if not prenoms or not any(n == "" or numero == "" or n == numero for n in prenoms):
+                    continue
+            if paragraphe:
+                gardes.append(paragraphe)
+    return "\n".join(gardes) or None
+
+
 def url_page(mot):
     return "https://fr.wiktionary.org/wiki/" + urllib.parse.quote(mot.replace(" ", "_"))
 
@@ -61,10 +93,13 @@ def importer(con):
         for s in e.get("sounds", []):
             if s.get("ipa") and s["ipa"] not in ipa:
                 ipa.append(s["ipa"])
+        etymologie = etymologie_du_prenom(e.get("etymology_texts", []), e.get("pos_title", "Prénom"))
+        # Langue d'origine : catégorie « … issus d'un mot en X », retenue seulement si X figure dans
+        # l'étymologie du prénom (les catégories valent pour toute la page, tous sens confondus).
         origines = []
         for c in e.get("categories", []):
             m = ORIGINE.search(c)
-            if m and m.group(1) not in origines:
+            if m and m.group(1) not in origines and etymologie and m.group(1).lower() in etymologie.lower():
                 origines.append(m.group(1))
         variantes = []
         for f in e.get("forms", []):
@@ -75,7 +110,7 @@ def importer(con):
         variantes += [[d["word"], "compose", None] for d in e.get("derived", []) if "word" in d]
         variantes += [[d["word"], "apparente", None] for d in e.get("related", []) if "word" in d]
         variantes += [[t["word"], "traduction", t.get("lang")] for t in e.get("translations", []) if t.get("word")]
-        lignes.append((pid, e["word"], e["pos_title"], "\n".join(e.get("etymology_texts", [])) or None,
+        lignes.append((pid, e["word"], e["pos_title"], etymologie,
                        json.dumps(ipa, ensure_ascii=False), json.dumps(origines, ensure_ascii=False),
                        json.dumps(variantes, ensure_ascii=False), ",".join(e.get("tags", [])), url_page(e["word"])))
     outils.inserer(con, "wiktionnaire_entree", {

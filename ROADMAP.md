@@ -29,12 +29,22 @@ Reste à faire ou à décider plus tard :
 - Règle « mixte » par période (aujourd'hui sur 1900–2025).
 - Volume des fichiers publiés (≈ 50 Mo au total, chargés à la demande) : à optimiser en phase 5 si besoin.
 
-## Phase 3 — Enrichissement encyclopédique
+## Phase 3 — Enrichissement encyclopédique (en cours ; partie publiée dans le MVP)
 
-- Module Wikidata (SPARQL, cache, reprise, journal, contrôle des ambiguïtés).
-- Wiktionnaire : **décision de licence à soumettre** avant toute reprise de texte.
-- Origines, étymologies, variantes, personnalités — toujours sourcées. Indicateur de qualité de fiche.
-- Recensement des sources étrangères réutilisables.
+- [x] Décision de licence (24/10/2026) : textes du Wiktionnaire repris sous CC BY-SA 4.0, fichiers séparés (`LICENCES.md`)
+- [x] Wiktionnaire (extraction kaikki.org) : étymologies (3 545 prénoms), langues d'origine, prononciations, variantes
+- [x] Wikidata : 18 086 prénoms Insee reliés (graphie exacte, type compatible, ambiguïtés signalées), variantes, langues d'usage
+- [x] Qualité des fiches (complète / partielle / minimale) et filtre dans la recherche
+- [x] Sources étrangères identifiées (États-Unis, Angleterre et pays de Galles, Belgique, Québec, Suisse) — non intégrées
+- [ ] **Personnalités** : la première méthode était trop lente (≈ 11 h, limitation de débit) ; nouvelle méthode en deux
+      requêtes (candidats légers, puis détails des 8 retenus) à terminer, puis `WIKIDATA_PERSONNALITES = True`
+- [ ] Anecdotes : aucune source ouverte et fiable identifiée
+
+## MVP en ligne (24/10/2026)
+
+- [x] Licence du code : EUPL 1.2
+- [x] Publication automatique sur GitHub Pages (`.github/workflows/deploy.yml`, guide `DEPLOIEMENT.md`)
+- [ ] Création du dépôt et premier envoi (par le porteur du projet)
 
 ## Phase 4 — Générateur avancé
 

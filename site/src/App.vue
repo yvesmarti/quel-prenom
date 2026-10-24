@@ -34,6 +34,8 @@ onMounted(async () => {
       (<a href="https://www.insee.fr/fr/statistiques/8595130">insee.fr</a>) et statistiques de l'état civil ;
       contours IGN. Licence Ouverte 2.0 (Etalab)<template v-if="meta">, données récupérées le
       {{ new Date(meta.source.date_recuperation).toLocaleDateString('fr-FR') }}</template>.
+      Informations encyclopédiques : Wikidata (CC0) et Wiktionnaire (textes sous
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr">CC BY-SA 4.0</a>). Code sous licence EUPL 1.2.
       Effectifs arrondis par l'Insee au multiple de 5 ; rangs officiels Insee.
       <RouterLink to="/methode">Méthode et sources</RouterLink>
     </p>

@@ -14,4 +14,6 @@ Conséquences pratiques :
 - quiconque réutilise les fichiers `wiktionnaire/` doit citer le Wiktionnaire et les redistribuer sous CC BY-SA 4.0 ;
 - les autres fichiers restent réutilisables librement (Etalab : mention de la source ; CC0 : sans condition) ;
 - sur le site, chaque texte du Wiktionnaire est accompagné de sa source, de la licence et d'un lien vers les auteurs ;
-- la licence du **code** du projet n'a pas encore été choisie (à décider avant la publication, phase 5).
+- le **code** du projet (pipeline Python, site Vue) est sous **EUPL 1.2** (Licence publique de l'Union européenne,
+  fichier `LICENSE`, décision du 24/10/2026) ; versions officielles dans toutes les langues de l'UE :
+  https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12

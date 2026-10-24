@@ -23,6 +23,12 @@
       "taille_octets": 1746989,
       "sha256": "a573b672264184d11a2f98220867653b092fe3a964433e30e3a0a4708d72d167",
       "recupere_le": "2026-10-24T15:14:36+00:00"
+    },
+    "wiktionnaire-kaikki": {
+      "url": "https://kaikki.org/frwiktionary/raw-wiktextract-data.jsonl.gz",
+      "taille_octets": 736596796,
+      "sha256": "3400def4f463dbbdea4b7093c0a7c3da80f7578b596f5d4d5b30aeed06a46bf9",
+      "recupere_le": "2026-10-24T17:11:47+00:00"
     }
   },
   "fichier_source": {
@@ -263,11 +269,29 @@
     },
     "meta": {
       "nb": 1,
-      "brut": 10751,
-      "gzip": 3246,
+      "brut": 11772,
+      "gzip": 3664,
       "plus_gros": [
         "meta.json",
-        10751
+        11772
+      ]
+    },
+    "enrichissement Wikidata (CC0)": {
+      "nb": 320,
+      "brut": 10110701,
+      "gzip": 900251,
+      "plus_gros": [
+        "el.json",
+        946023
+      ]
+    },
+    "enrichissement Wiktionnaire (CC BY-SA)": {
+      "nb": 247,
+      "brut": 2555473,
+      "gzip": 447538,
+      "plus_gros": [
+        "ma.json",
+        264680
       ]
     }
   },
@@ -361,12 +385,56 @@
     ]
   ],
   "presents_une_seule_annee": 13218,
-  "fiches_enrichies": 0,
-  "etymologies_sourcees": 0,
-  "personnalites": 0,
+  "enrichissement": {
+    "fiches": {
+      "minimale": 35783,
+      "partielle": 13380
+    },
+    "part_naissances_fiches_enrichies": 0.9595,
+    "prenoms_avec_etymologie": 3545,
+    "prenoms_avec_origine": 1721,
+    "prenoms_avec_prononciation": 3629,
+    "prenoms_avec_variantes": 8985,
+    "prenoms_avec_langues_usage": 8827,
+    "prenoms_avec_personnalites": 0,
+    "personnalites": 0,
+    "personnalites_distinctes": 0,
+    "wiktionnaire_entrees_francaises": 9689,
+    "wiktionnaire_entrees_reliees": 6789,
+    "correspondances_wikidata": {
+      "ambigu": 2145,
+      "type_incompatible": 894,
+      "unique": 15941
+    },
+    "exemples_ambigus_wikidata": [
+      "akira",
+      "mio",
+      "sebastian",
+      "takumi",
+      "mika",
+      "seiji",
+      "isao",
+      "jun",
+      "lakshmi",
+      "shinji"
+    ],
+    "wikidata": {
+      "interrogation": "2026-10-24T17:15:11+00:00",
+      "debut": "2026-10-24T18:37:51+00:00",
+      "fin": "2026-10-24T18:37:54+00:00",
+      "elements": 134220,
+      "elements_relies": 21840,
+      "variantes": 83492,
+      "langues": 15431,
+      "personnalites_recuperees": false,
+      "personnalites": 0,
+      "echecs_personnalites": []
+    },
+    "anecdotes": 0
+  },
   "taille_index": {
-    "brut": 3012486,
-    "gzip": 690712
+    "brut": 3209148,
+    "gzip": 716528
   },
   "taille_lots": {
     "nb": 353,

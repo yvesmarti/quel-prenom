@@ -7,6 +7,7 @@ Généré automatiquement par `pipeline/quality_report.py`. Ne pas modifier à l
 - `insee-naissances-t35-2025` : https://www.insee.fr/fr/statistiques/fichier/9000187/t35.xlsx — 33,548 octets — SHA-256 `d14c2cc2faa18eb7…` — récupéré le 2026-10-24T15:14:36+00:00
 - `ign-contours-departements-2018` : https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-avec-outre-mer.geojson — 3,722,544 octets — SHA-256 `0c331e85eef244d8…` — récupéré le 2026-10-24T15:14:36+00:00
 - `ign-contours-regions-2018` : https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions-avec-outre-mer.geojson — 1,746,989 octets — SHA-256 `a573b672264184d1…` — récupéré le 2026-10-24T15:14:36+00:00
+- `wiktionnaire-kaikki` : https://kaikki.org/frwiktionary/raw-wiktextract-data.jsonl.gz — 736,596,796 octets — SHA-256 `3400def4f463dbbd…` — récupéré le 2026-10-24T17:11:47+00:00
 
 ## Couverture du fichier des prénoms (somme des effectifs nationaux / naissances officielles T35)
 Champ du dénominateur : métropole avant 1994, France entière ensuite. Détail complet : `site/public/data/couverture.json`.
@@ -40,9 +41,16 @@ declin : 598 · devenu_rare : 269 · emergent : 479 · progression : 463 · reto
 - Composés (avec tiret) : 3,593 — avec accent ou ligature : 7,151
 - Présents une seule année au niveau national : 13,218
 
-## Enrichissement (phase 3, non commencé)
-- Fiches enrichies : 0 · étymologies sourcées : 0 · personnalités : 0
-- Toutes les fiches sont donc « minimales » (statistiques INSEE seules).
+## Enrichissement encyclopédique (phase 3)
+- Fiches : complètes 0 · partielles 13,380 · minimales 35,783
+- Part des naissances 1900-2025 couvertes par une fiche enrichie : 96.0%
+- Prénoms avec étymologie sourcée : 3,545 · origine : 1,721 · prononciation : 3,629
+- Prénoms avec variantes : 8,985 · langues d'usage : 8,827 · personnalités : 0 (0 mentions, 0 personnes)
+- Wiktionnaire : 9,689 entrées « Prénom » en français, dont 6,789 reliées à un prénom Insee (graphie exacte)
+- Wikidata : 134,220 éléments prénoms ; correspondances (prénoms Insee) : unique 15,941 · ambiguë 2,145 · type incompatible écarté 894
+- Exemples de correspondances ambiguës (plusieurs éléments de même graphie) : akira, mio, sebastian, takumi, mika, seiji, isao, jun, lakshmi, shinji
+- Personnalités non récupérées (délai dépassé) : 0 élément(s) — Wikidata interrogé le 2026-10-24T17:15:11+00:00 ; personnalités pas encore récupérées
+- Anecdotes : 0 (aucune source ouverte et fiable retenue)
 
 ## Contrôles et anomalies
 - Valeurs nulles : aucune · doublons de clé : 0 · rangs dupliqués : 0
@@ -61,7 +69,7 @@ declin : 598 · devenu_rare : 269 · emergent : 479 · progression : 463 · reto
   - HELENA / HELÉNA / HÈLÉNA / HÉLENA / HÉLÈNA / HÉLÉNA
 
 ## Fichiers publiés
-- Index : 2 942 Ko brut, 675 Ko compressé (gzip)
+- Index : 3 134 Ko brut, 700 Ko compressé (gzip)
 - Détails : 353 lots, 11 085 Ko brut au total, 3 434 Ko compressé ; plus gros lot : ma.json (868 Ko)
 - Classements nationaux : 126 fichier(s), 2 136 Ko brut, 741 Ko compressé ; plus gros : 1950.json (17 Ko)
 - Classements nationaux par décennie : 1 fichier(s), 44 Ko brut, 14 Ko compressé ; plus gros : france-decennies.json (44 Ko)
@@ -70,4 +78,6 @@ declin : 598 · devenu_rare : 269 · emergent : 479 · progression : 463 · reto
 - Fonds de carte et totaux : 4 fichier(s), 353 Ko brut, 103 Ko compressé ; plus gros : departements.json (211 Ko)
 - Tendances : 1 fichier(s), 188 Ko brut, 28 Ko compressé ; plus gros : tendances.json (188 Ko)
 - Couverture : 1 fichier(s), 12 Ko brut, 4 Ko compressé ; plus gros : couverture.json (12 Ko)
-- Meta : 1 fichier(s), 10 Ko brut, 3 Ko compressé ; plus gros : meta.json (10 Ko)
+- Meta : 1 fichier(s), 11 Ko brut, 4 Ko compressé ; plus gros : meta.json (11 Ko)
+- Enrichissement wikidata (cc0) : 320 fichier(s), 9 874 Ko brut, 879 Ko compressé ; plus gros : el.json (924 Ko)
+- Enrichissement wiktionnaire (cc by-sa) : 247 fichier(s), 2 496 Ko brut, 437 Ko compressé ; plus gros : ma.json (258 Ko)

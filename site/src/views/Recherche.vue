@@ -28,6 +28,7 @@ async function charger() {
 onMounted(charger)
 
 const resultats = computed(() => filtrer(prenoms.value, criteres))
+const ilYADesFichesCompletes = computed(() => prenoms.value.some((p) => p.qualite === 'c'))
 const visibles = computed(() => resultats.value.slice(0, affiches.value))
 
 watch(criteres, () => { affiches.value = PAR_PAGE })
@@ -101,7 +102,7 @@ function reinitialiser() {
           <select v-model="criteres.fiche">
             <option value="tous">Toutes</option>
             <option value="enrichies">Avec informations encyclopédiques</option>
-            <option value="completes">Complètes uniquement</option>
+            <option v-if="ilYADesFichesCompletes" value="completes">Complètes uniquement</option>
           </select>
         </label>
         <label class="champ">

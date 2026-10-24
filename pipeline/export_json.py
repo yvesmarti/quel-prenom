@@ -241,6 +241,16 @@ def exporter_encyclopedie(con, sortie):
     return len(encyclo), len(wikt)
 
 
+def resume_enrichissement(con):
+    """Ce que contient l'enrichissement publié (le site adapte ses textes : pas de promesse sans données)."""
+    if not table_existe(con, "fiche_qualite"):
+        return {"disponible": False}
+    compte = lambda t: con.execute(f"SELECT count(DISTINCT prenom_id) FROM {t}").fetchone()[0]
+    return {"disponible": True,
+            "fiches": dict(con.execute("SELECT niveau, count(*) FROM fiche_qualite GROUP BY 1 ORDER BY 1").fetchall()),
+            "etymologies": compte("etymologie"), "personnalites": compte("personnalite")}
+
+
 def exporter_meta(con, sortie, nb_prenoms, nb_lots):
     colonnes = [d[0] for d in con.execute("SELECT * FROM source ORDER BY id").description]
     sources = [dict(zip(colonnes, s)) for s in con.execute("SELECT * FROM source ORDER BY id").fetchall()]
@@ -249,7 +259,7 @@ def exporter_meta(con, sortie, nb_prenoms, nb_lots):
         wd = json.loads(resume_wd.read_text(encoding="utf-8"))
         sources.append({**{k: config.SOURCE_WIKIDATA[k] for k in ("id", "organisme", "titre", "licence")},
                         "url": config.SOURCE_WIKIDATA["page"], "fichier_url": config.SOURCE_WIKIDATA["url"],
-                        "publication": "base vivante", "date_recuperation": wd["debut"], "sha256": None})
+                        "publication": "base vivante", "date_recuperation": wd.get("interrogation", wd["debut"]), "sha256": None})
     prenoms = next(s for s in sources if s["id"] == config.SOURCE_ID)
     annees = con.execute("SELECT min(annee), max(annee) FROM statistique").fetchone()
     naissances = defaultdict(dict)
@@ -275,6 +285,7 @@ def exporter_meta(con, sortie, nb_prenoms, nb_lots):
         "nb_lots": nb_lots,
         "naissances": naissances,
         "nb_publies": nb_publies,
+        "enrichissement": resume_enrichissement(con),
         "regles": {
             "seuil_mixte": config.SEUIL_MIXTE,
             "arrondi": "Effectifs arrondis par l'Insee au multiple de 5 le plus proche.",

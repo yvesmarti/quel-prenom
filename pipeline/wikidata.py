@@ -13,9 +13,11 @@ Chaque réponse est mise en cache (data/raw/wikidata/cache/) : relancer le scrip
 s'était arrêté sans réinterroger Wikidata. Les erreurs sont écrites dans data/work/journal_wikidata.log.
 Pour repartir de zéro (nouvelles données Wikidata) : supprimer le dossier de cache.
 
-Usage : python pipeline/wikidata.py
+Usage : python pipeline/wikidata.py [--personnalites]
+(la récupération des personnalités, très longue, est désactivée par défaut : voir WIKIDATA_PERSONNALITES)
 """
 import hashlib
+import http.client
 import json
 import time
 import urllib.error
@@ -63,7 +65,11 @@ def sparql(requete):
             "Content-Type": "application/x-www-form-urlencoded"})
         try:
             with urllib.request.urlopen(req, timeout=90) as r:
-                lignes = [{k: v["value"] for k, v in b.items()} for b in json.load(r)["results"]["bindings"]]
+                try:
+                    lignes = [{k: v["value"] for k, v in b.items()} for b in json.load(r)["results"]["bindings"]]
+                except (json.JSONDecodeError, http.client.IncompleteRead) as e:
+                    # Réponse coupée en cours de transfert (délai dépassé côté serveur) : lot trop lourd.
+                    raise DelaiDepasse(f"réponse tronquée : {e}")
             fichier.write_text(json.dumps(lignes, ensure_ascii=False), encoding="utf-8")
             time.sleep(1)  # politesse envers le service public
             return lignes
@@ -93,6 +99,24 @@ def par_lots(liste, taille):
         yield liste[i:i + taille]
 
 
+def par_lots_adaptatifs(construire, ids, taille):
+    """Exécute construire(lot) par lots ; un lot trop lourd est coupé en deux, récursivement."""
+    def executer(lot):
+        try:
+            return sparql(construire(lot))
+        except DelaiDepasse:
+            if len(lot) == 1:
+                journal(f"{lot[0]} : requête abandonnée (délai dépassé même seul)")
+                return []
+            milieu = len(lot) // 2
+            journal(f"lot de {len(lot)} trop lourd, découpé en deux")
+            return executer(lot[:milieu]) + executer(lot[milieu:])
+    lignes = []
+    for lot in par_lots(ids, taille):
+        lignes += executer(lot)
+    return lignes
+
+
 def valeurs(ids):
     return " ".join(f"wd:{i}" for i in ids)
 
@@ -104,17 +128,19 @@ def elements():
     for t, nom in TYPES.items():
         for l in sparql(f"SELECT ?i WHERE {{ ?i wdt:P31 wd:{t} }}"):
             types[qid(l["i"])].add(nom)
-    print(f"  {len(types):,} éléments prénoms")
+    # La liste contient aussi des « sens de lexèmes » (L…-S…) : sans libellé, ils disparaissent à l'étape suivante.
+    # (Ne pas les retirer ici : la composition des lots, donc le cache, en dépend.)
+    print(f"  {len(types):,} éléments prénoms et sens de lexèmes")
     infos = {}
     ids = sorted(types)
     for n, lot in enumerate(par_lots(ids, 1000)):
-        for l in sparql(f"""SELECT ?i ?sl ?fr ?mul ?en ?native ?article WHERE {{
-              VALUES ?i {{ {valeurs(lot)} }} ?i wikibase:sitelinks ?sl .
+        for l in par_lots_adaptatifs(lambda sous_lot: f"""SELECT ?i ?sl ?fr ?mul ?en ?native ?article WHERE {{
+              VALUES ?i {{ {valeurs(sous_lot)} }} ?i wikibase:sitelinks ?sl .
               OPTIONAL {{ ?i rdfs:label ?fr FILTER(LANG(?fr) = "fr") }}
               OPTIONAL {{ ?i rdfs:label ?mul FILTER(LANG(?mul) = "mul") }}
               OPTIONAL {{ ?i rdfs:label ?en FILTER(LANG(?en) = "en") }}
               OPTIONAL {{ ?i wdt:P1705 ?native }}
-              OPTIONAL {{ ?article schema:about ?i ; schema:isPartOf <https://fr.wikipedia.org/> }} }}"""):
+              OPTIONAL {{ ?article schema:about ?i ; schema:isPartOf <https://fr.wikipedia.org/> }} }}""", lot, 1000):
             i = qid(l["i"])
             e = infos.setdefault(i, {"qid": i, "types": sorted(types[i]), "liens": int(l["sl"]),
                                      "libelle": None, "graphies": set(), "article_fr": None})
@@ -153,17 +179,16 @@ def correspondances(con, infos):
 
 def relations(ids):
     variantes, langues = [], []
-    for lot in par_lots(ids, 400):
-        for l in sparql(f"""SELECT ?i ?prop ?j ?jfr ?jmul WHERE {{
-              VALUES ?i {{ {valeurs(lot)} }} VALUES ?prop {{ wdt:P460 wdt:P1560 }} ?i ?prop ?j .
-              OPTIONAL {{ ?j rdfs:label ?jfr FILTER(LANG(?jfr) = "fr") }}
-              OPTIONAL {{ ?j rdfs:label ?jmul FILTER(LANG(?jmul) = "mul") }} }}"""):
-            type_ = "equivalent_autre_genre" if l["prop"].endswith("P1560") else "reputee_identique"
-            variantes.append((qid(l["i"]), qid(l["j"]), l.get("jfr") or l.get("jmul"), type_))
-        for l in sparql(f"""SELECT ?i ?l ?lfr WHERE {{
-              VALUES ?i {{ {valeurs(lot)} }} ?i wdt:P407 ?l .
-              OPTIONAL {{ ?l rdfs:label ?lfr FILTER(LANG(?lfr) = "fr") }} }}"""):
-            langues.append((qid(l["i"]), qid(l["l"]), l.get("lfr")))
+    for l in par_lots_adaptatifs(lambda lot: f"""SELECT ?i ?prop ?j ?jfr ?jmul WHERE {{
+          VALUES ?i {{ {valeurs(lot)} }} VALUES ?prop {{ wdt:P460 wdt:P1560 }} ?i ?prop ?j .
+          OPTIONAL {{ ?j rdfs:label ?jfr FILTER(LANG(?jfr) = "fr") }}
+          OPTIONAL {{ ?j rdfs:label ?jmul FILTER(LANG(?jmul) = "mul") }} }}""", ids, 400):
+        type_ = "equivalent_autre_genre" if l["prop"].endswith("P1560") else "reputee_identique"
+        variantes.append((qid(l["i"]), qid(l["j"]), l.get("jfr") or l.get("jmul"), type_))
+    for l in par_lots_adaptatifs(lambda lot: f"""SELECT ?i ?l ?lfr WHERE {{
+          VALUES ?i {{ {valeurs(lot)} }} ?i wdt:P407 ?l .
+          OPTIONAL {{ ?l rdfs:label ?lfr FILTER(LANG(?lfr) = "fr") }} }}""", ids, 400):
+        langues.append((qid(l["i"]), qid(l["l"]), l.get("lfr")))
     return variantes, langues
 
 
@@ -246,7 +271,7 @@ def personnalites(ids):
     return resultat, echecs
 
 
-def enrichir():
+def enrichir(avec_personnalites=config.WIKIDATA_PERSONNALITES):
     debut = datetime.now(timezone.utc).isoformat(timespec="seconds")
     con = duckdb.connect(str(config.BASE))
     print("Éléments prénoms Wikidata…")
@@ -270,19 +295,28 @@ def enrichir():
                                               "type": "VARCHAR"}, variantes)
     outils.inserer(con, "wikidata_langue", {"qid": "VARCHAR", "langue_qid": "VARCHAR", "langue": "VARCHAR"}, langues)
 
-    print("Personnalités…")
-    perso, echecs = personnalites(retenus)
+    if avec_personnalites:
+        print("Personnalités…")
+        perso, echecs = personnalites(retenus)
+    else:
+        print("Personnalités : non récupérées (WIKIDATA_PERSONNALITES = False dans config.py)")
+        perso, echecs = [], []
     outils.inserer(con, "wikidata_personnalite", {
         "prenom_qid": "VARCHAR", "qid": "VARCHAR", "nom": "VARCHAR", "description": "VARCHAR",
         "naissance": "INTEGER", "deces": "INTEGER", "domaines": "VARCHAR", "url": "VARCHAR", "liens": "INTEGER"}, perso)
 
-    resume = {"debut": debut, "fin": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    # Date réelle de l'interrogation : le plus ancien fichier du cache (les relances relisent le cache).
+    plus_ancien = min(f.stat().st_mtime for f in CACHE.glob("*.json"))
+    resume = {"interrogation": datetime.fromtimestamp(plus_ancien, timezone.utc).isoformat(timespec="seconds"),
+              "debut": debut, "fin": datetime.now(timezone.utc).isoformat(timespec="seconds"),
               "elements": len(infos), "elements_relies": len(retenus), "variantes": len(variantes),
-              "langues": len(langues), "personnalites": len(perso), "echecs_personnalites": echecs}
+              "langues": len(langues), "personnalites_recuperees": avec_personnalites,
+              "personnalites": len(perso), "echecs_personnalites": echecs}
     (config.DOSSIER_CACHE_WIKIDATA / "resume.json").write_text(json.dumps(resume, indent=2), encoding="utf-8")
     print(f"Wikidata OK : {resume}")
     con.close()
 
 
 if __name__ == "__main__":
-    enrichir()
+    import sys
+    enrichir(avec_personnalites=config.WIKIDATA_PERSONNALITES or "--personnalites" in sys.argv)
