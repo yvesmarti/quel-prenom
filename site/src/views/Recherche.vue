@@ -41,7 +41,7 @@ function reinitialiser() {
 
 <template>
   <section aria-labelledby="titre-recherche">
-    <h1 id="titre-recherche" class="titre">Trouver un prénom</h1>
+    <h1 id="titre-recherche" class="titre">Rechercher un prénom</h1>
     <p class="doux intro">
       Explorez les prénoms attribués en France depuis 1900, d'après l'Insee.
     </p>

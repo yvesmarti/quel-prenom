@@ -111,6 +111,20 @@ La table `source` contient désormais une ligne par source (prénoms, T35, conto
 
 Fixture de test : `site/tests/fixtures/indicateurs_python.json` (indicateurs Python d'un échantillon de séries).
 
+## Profils de suggestion (`profils.v1.json`)
+
+Un prénom par ligne (≈ 10 000 : au moins 60 naissances depuis 2011, ou tendance « retour »), colonnes compactes comme
+`index.v1.json` : `id, affichage, sexe, rec_f, rec_m, rang_f, rang_m, pic, debut, lettres, syllabes, accent, compose, tend, orig, qualite`.
+
+- `rec_f` / `rec_m` : naissances par an, moyenne des 5 dernières années (effectifs arrondis) ;
+- `rang_f` / `rang_m` : rang officiel de la dernière année (vide si absent) ;
+- `pic` : décennie du record ; `debut` : première année à au moins 50 naissances ;
+- `syllabes` : **estimation** par règles (`normalize.nb_syllabes`) ;
+- `tend` : codes des tendances (`e` émergent, `p` progression, `r` retour, `v` vagues, `d` déclin, `x` devenu rare) ;
+- `orig` : familles d'origine (Wiktionnaire, `config.GROUPES_ORIGINE`) séparées par `|`, vide si inconnue.
+
+Les classes de popularité et de style sont calculées par le site (`lib/suggestions.js`) et documentées dans la page Méthode.
+
 ## Ajouts de la phase 3 (enrichissement encyclopédique)
 
 ### Tables DuckDB

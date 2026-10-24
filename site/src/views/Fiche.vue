@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { chargerIndex, chargerMeta, chargerSeries } from '../lib/dataLoader.js'
 import { environ, normaliser, ordinal, pourcentage } from '../lib/normalize.js'
 import { indicateurs } from '../lib/indicateurs.js'
@@ -7,6 +8,10 @@ import { LIBELLES_TENDANCES, definitionTendance, ORDRE_TENDANCES } from '../lib/
 import CourbeNationale from '../components/CourbeNationale.vue'
 import GeographiePrenom from '../components/GeographiePrenom.vue'
 import EncyclopediePrenom from '../components/EncyclopediePrenom.vue'
+
+const router = useRouter()
+// Retour à la page d'où l'on vient (suggestions, liste, recherche…), sinon à l'accueil.
+const retour = () => (window.history.state?.back ? router.back() : router.push('/'))
 
 const props = defineProps({ id: { type: String, required: true } })
 
@@ -96,7 +101,7 @@ const pourMille = (x) => `${x.toLocaleString('fr-FR', { maximumFractionDigits: 2
 </script>
 
 <template>
-  <RouterLink to="/" class="retour">← Retour à la recherche</RouterLink>
+  <a href="#/" class="retour" @click.prevent="retour">← Retour</a>
 
   <div v-if="etat === 'chargement'" role="status" class="etat">Chargement de la fiche…</div>
   <div v-else-if="etat === 'introuvable'" role="alert" class="etat">

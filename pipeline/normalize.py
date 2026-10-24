@@ -68,3 +68,49 @@ def cle_lot(prenom_insee, longueur=2):
     """
     lettres = [c for c in normaliser(prenom_insee) if "a" <= c <= "z"]
     return "".join(lettres[:longueur]) or "_"
+
+
+_VOYELLES = "aeiouyàâäéèêëîïôöùûüœæ"
+
+
+def nb_syllabes(prenom):
+    """Estimation du nombre de syllabes (règles simples du français, tiret = mots séparés).
+
+    Approximative : sert uniquement aux suggestions (sonorité), jamais présentée comme exacte.
+    """
+    total = 0
+    for mot in prenom.lower().split("-"):
+        lettres = [c for c in mot if c.isalpha()]
+        # e final muet (Alice, Anne, Jade, Jules, Renée), si une voyelle précède.
+        if len(lettres) > 3 and lettres[-2:] == ["e", "s"] and lettres[-3] not in _VOYELLES:
+            lettres = lettres[:-2]
+        elif len(lettres) > 2 and lettres[-1] == "e" and (lettres[-2] not in _VOYELLES or lettres[-2] == "é") \
+                and any(c in _VOYELLES for c in lettres[:-2]):
+            lettres = lettres[:-1]
+        # y devant une voyelle est une consonne (Yanis, Maya).
+        sons = [("v" if c in _VOYELLES and not (c == "y" and i + 1 < len(lettres) and lettres[i + 1] in _VOYELLES)
+                 else "c") for i, c in enumerate(lettres)]
+        n, i = 0, 0
+        while i < len(lettres):
+            if sons[i] == "v":
+                debut = i
+                while i < len(lettres) and sons[i] == "v":
+                    i += 1
+                suite = lettres[debut:i]
+                suivante = lettres[i] if i < len(lettres) else ""
+                n += 1 + sum(_hiatus(suite[k], suite[k + 1], suite[k + 2] if k + 2 < len(suite) else suivante)
+                             for k in range(len(suite) - 1))
+            else:
+                i += 1
+        total += max(n, 1)
+    return total
+
+
+def _hiatus(x, y, suivante=""):
+    """Vrai si deux voyelles contiguës se prononcent en deux syllabes (Léa, Noël, Zoé, Mia, Noa, Gabriel)."""
+    if x == "u" and y == "e":
+        return False
+    if x == "i" and y == "e":  # Gabriel, Daniel (ga-bri-el) mais Olivier, Marie
+        return suivante == "l"
+    return (x in "éèêëï" or y in "éèëïü" or (x in "iu" and y in "aoeé")
+            or (x == "o" and y == "a") or (x == "a" and y == "o"))

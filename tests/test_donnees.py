@@ -100,3 +100,20 @@ def test_meta(con):
     meta = json.loads((config.DOSSIER_PUBLIC / "meta.json").read_text(encoding="utf-8"))
     assert meta["annee_min"] == 1900 and meta["annee_max"] == config.MILLESIME
     assert meta["source"]["licence"] == config.LICENCE_INSEE
+
+
+def test_profils_de_suggestion(index):
+    """Les profils sont cohérents avec l'index et assez variés pour suggérer."""
+    data = json.loads((config.DOSSIER_PUBLIC / "profils.v1.json").read_text(encoding="utf-8"))
+    profils = [dict(zip(data["colonnes"], ligne)) for ligne in data["lignes"]]
+    ids = {p["id"]: p for p in index}
+    assert 5000 < len(profils) < 20000
+    assert len({p["id"] for p in profils}) == len(profils)
+    for p in profils:
+        base = ids[p["id"]]
+        assert p["sexe"] == base["sexe"] and p["lettres"] == base["lettres"]
+        assert p["syllabes"] >= 1 and p["rec_f"] >= 0 and p["rec_m"] >= 0
+    # Chaque sexe et chaque famille d'origine doivent être représentés.
+    assert {"F", "M"} <= {p["sexe"] for p in profils}
+    familles = {f for p in profils for f in p["orig"].split("|") if f}
+    assert set(config.GROUPES_ORIGINE) <= familles

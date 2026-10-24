@@ -1,4 +1,5 @@
 <script setup>
+import { SEUILS_POPULARITE } from '../lib/suggestions.js'
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts/core'
 import { LineChart } from 'echarts/charts'
@@ -172,6 +173,29 @@ onBeforeUnmount(() => { window.removeEventListener('resize', redimensionner); gr
             personnalité ; <em>partielle</em> = au moins une information encyclopédique sourcée ; <em>minimale</em> = statistiques
             de l'Insee seulement. Une information absente n'est jamais remplacée par une supposition.</li>
           <li>Aucune anecdote n'est publiée pour l'instant : aucune source ouverte et fiable n'a été retenue.</li>
+        </ul>
+      </section>
+
+      <section id="suggestions" class="carte">
+        <h2>Suggestions de prénoms</h2>
+        <ul>
+          <li><strong>Prénoms proposés</strong> : ceux donnés au moins 60 fois depuis 2011 (ou en « retour »), soit environ
+            10 000 prénoms. Les prénoms plus rares restent trouvables par la recherche.</li>
+          <li><strong>Popularité</strong> (naissances par an, moyenne des 5 dernières années, pour le sexe visé) :
+            <em>très courant</em> à partir de {{ SEUILS_POPULARITE.courant }}, <em>connu</em> à partir de
+            {{ SEUILS_POPULARITE.connu }}, <em>rare</em> en dessous.</li>
+          <li><strong>Style</strong> : <em>intemporel</em> = au moins 50 naissances par an avant 1925, encore au moins 100
+            aujourd'hui et pas en déclin ; <em>vintage</em> = sommet avant 1960 et moins de 100 naissances par an aujourd'hui,
+            ou « retour » ; <em>moderne</em> = au moins 50 naissances par an seulement depuis 1985, ou émergent. Un prénom peut avoir
+            plusieurs styles ou aucun. Ce sont des conventions du site, pas des données officielles.</li>
+          <li><strong>Longueur</strong> : court = 4 lettres ou moins, moyen = 5 ou 6, long = 7 ou plus. Le nombre de
+            syllabes est une <em>estimation</em> par règles simples du français.</li>
+          <li><strong>Origine</strong> : familles de langues regroupées d'après le Wiktionnaire ; connue pour une partie seulement
+            des prénoms. Un prénom d'origine inconnue n'est jamais écarté pour cette raison.</li>
+          <li><strong>Vos choix</strong> : critères, prénoms gardés, à revoir et écartés restent dans ce navigateur
+            (stockage local) ; rien n'est envoyé ni enregistré sur un serveur. Le lien de partage ne contient que les noms
+            des prénoms gardés. Les suggestions s'ajustent aux prénoms gardés et écartés par un calcul simple (longueur, finale,
+            initiale, popularité, époque, origine), sans intelligence artificielle ni donnée externe.</li>
         </ul>
       </section>
 

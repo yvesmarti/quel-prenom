@@ -42,3 +42,13 @@ def test_champs_derives():
 ])
 def test_sexe_usage(f, m, attendu):
     assert sexe_usage(f, m) == attendu
+
+
+@pytest.mark.parametrize("prenom, attendu", [
+    ("Léa", 2), ("Marie", 2), ("Lucas", 2), ("Camille", 2), ("Jules", 1), ("Emma", 2), ("Noah", 2),
+    ("Gabriel", 3), ("Maël", 2), ("Inès", 2), ("Anaïs", 3), ("Mia", 2), ("Mathieu", 2), ("Olivier", 3),
+    ("Lionel", 3), ("Enzo", 2), ("Arthur", 2), ("Raphaël", 3), ("Chloé", 2), ("Zoé", 2), ("Jade", 1),
+    ("Alice", 2), ("Anne", 1), ("Yanis", 2), ("Éléonore", 4), ("Marie-Claire", 3), ("Gaël", 2),
+])
+def test_nb_syllabes(prenom, attendu):
+    assert normalize.nb_syllabes(prenom) == attendu

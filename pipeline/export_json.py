@@ -87,6 +87,70 @@ def exporter_echantillon_indicateurs(con):
         for pid, sexe, d in echantillon])
 
 
+COLONNES_PROFILS = ["id", "affichage", "sexe", "rec_f", "rec_m", "rang_f", "rang_m", "pic", "debut",
+                    "lettres", "syllabes", "accent", "compose", "tend", "orig", "qualite"]
+
+
+def arrondi_compact(x):
+    """Entier si possible (fichier plus léger), sinon une décimale."""
+    x = round(x, 1)
+    return int(x) if x == int(x) else x
+
+
+def exporter_profils(con, sortie):
+    """Profils compacts pour les suggestions : un prénom encore donné (ou en retour) par ligne.
+
+    rec_f / rec_m : naissances par an (moyenne sur les dernières années) ; rang_f / rang_m : rang officiel
+    de la dernière année ; pic : décennie du record ; debut : première année à au moins
+    PROFILS_DEBUT_MIN naissances ; tend : codes des tendances (config.CODES_TENDANCES) ; orig : familles
+    d'origine connues (Wiktionnaire), séparées par « | ».
+    """
+    derniere = con.execute("SELECT max(annee) FROM statistique WHERE niveau = 'FRANCE'").fetchone()[0]
+    debut_fenetre = derniere - config.PROFILS_FENETRE + 1
+    recentes = {(pid, sexe): (v / config.PROFILS_FENETRE) for pid, sexe, v in con.execute(
+        """SELECT prenom_id, sexe, sum(valeur_arrondie) FROM statistique
+           WHERE niveau = 'FRANCE' AND annee >= ? GROUP BY ALL""", [debut_fenetre]).fetchall()}
+    rangs = {(pid, sexe): r for pid, sexe, r in con.execute(
+        """SELECT prenom_id, sexe, rang_officiel FROM statistique WHERE niveau = 'FRANCE' AND annee = ?""",
+        [derniere]).fetchall()}
+    cumuls = dict(con.execute("""SELECT prenom_id, sum(valeur_arrondie) FROM statistique
+        WHERE niveau = 'FRANCE' AND annee >= ? GROUP BY 1""", [config.PROFILS_CUMUL_DEPUIS]).fetchall())
+    par_annee = con.execute("""SELECT prenom_id, annee, sum(valeur_arrondie) FROM statistique
+        WHERE niveau = 'FRANCE' GROUP BY 1, 2 ORDER BY 1, 2""").fetchall()
+    pics, debuts = {}, {}
+    for pid, annee, v in par_annee:
+        if pid not in pics or v > pics[pid][1]:
+            pics[pid] = (annee, v)
+        if v >= config.PROFILS_DEBUT_MIN and pid not in debuts:
+            debuts[pid] = annee
+    tendances = defaultdict(set)
+    for pid, cat in con.execute("SELECT DISTINCT prenom_id, categorie FROM tendance").fetchall():
+        tendances[pid].add(config.CODES_TENDANCES[cat])
+    famille = {langue: nom for nom, langues in config.GROUPES_ORIGINE.items() for langue in langues}
+    origines = defaultdict(set)
+    if table_existe(con, "origine"):
+        for pid, langue in con.execute("SELECT prenom_id, langue FROM origine").fetchall():
+            origines[pid].add(famille.get(langue, "autre"))
+    qualite = (dict(con.execute("SELECT prenom_id, left(niveau, 1) FROM fiche_qualite").fetchall())
+               if table_existe(con, "fiche_qualite") else {})
+
+    lignes = []
+    for pid, affichage, sexe, lettres, accent, compose, graphie in con.execute("""SELECT id, graphie_affichage,
+            sexe_usage, nb_lettres, a_accent::INTEGER, compose::INTEGER, graphie_insee FROM prenom
+            ORDER BY total_f_arrondi + total_m_arrondi DESC, id""").fetchall():
+        if cumuls.get(pid, 0) < config.PROFILS_CUMUL_MIN and "r" not in tendances[pid]:
+            continue
+        rec_f, rec_m = recentes.get((pid, "F"), 0), recentes.get((pid, "M"), 0)
+        lignes.append([pid, affichage, sexe, arrondi_compact(rec_f), arrondi_compact(rec_m),
+                       rangs.get((pid, "F")), rangs.get((pid, "M")),
+                       pics[pid][0] // 10 * 10, debuts.get(pid), lettres, normalize.nb_syllabes(graphie),
+                       accent, compose, "".join(sorted(tendances[pid])), "|".join(sorted(origines[pid])),
+                       qualite.get(pid, "m")])
+    ecrire(sortie / f"profils.v{config.VERSION_FORMAT}.json",
+           {"version": config.VERSION_FORMAT, "annee": derniere, "colonnes": COLONNES_PROFILS, "lignes": lignes})
+    return len(lignes)
+
+
 def exporter_tendances(con, sortie):
     categories = defaultdict(list)
     for cat, pid, sexe, score, details in con.execute("""
@@ -310,6 +374,8 @@ def exporter():
     nb_encyclo, nb_wikt = exporter_encyclopedie(con, sortie)
     print(f"  enrichissement : {nb_encyclo} lots Wikidata, {nb_wikt} lots Wiktionnaire")
     tendances = exporter_tendances(con, sortie)
+    nb_profils = exporter_profils(con, sortie)
+    print(f"  profils de suggestion : {nb_profils:,} prénoms")
     nb_annees, nb_zones = exporter_classements(con, sortie)
     nb_lots_geo = exporter_geo(con, sortie)
     exporter_meta(con, sortie, nb_prenoms, nb_lots)

@@ -147,5 +147,25 @@ CLASSEMENT_NATIONAL_FIN = 50
 CLASSEMENT_TERRITORIAL_TOP = {"REG": 50, "DEP": 20}  # par an ; limité pour la taille des fichiers
 CLASSEMENT_DECENNIE_TOP = 100
 
+# Profils de suggestion (profils.v1.json) : prénoms « suggérables » et regroupement des origines.
+PROFILS_FENETRE = 5            # popularité actuelle = moyenne annuelle sur les 5 dernières années
+PROFILS_CUMUL_DEPUIS = 2011    # sont retenus les prénoms cumulant …
+PROFILS_CUMUL_MIN = 60         # … au moins 60 naissances depuis cette année (ou une tendance « retour »)
+PROFILS_DEBUT_MIN = 50         # « début » = première année à ≥ 50 naissances/an
+# Langues d'origine du Wiktionnaire regroupées en familles lisibles (le reste : « autre »).
+GROUPES_ORIGINE = {
+    "latin": ["latin"],
+    "grec": ["grec ancien", "grec"],
+    "hébraïque": ["hébreu", "hébreu ancien"],
+    "arabe": ["arabe", "persan", "turc", "ourdou"],
+    "germanique": ["allemand", "vieux haut allemand", "proto-germanique", "langues germaniques", "vieux norrois",
+                   "vieux-francique", "gotique", "néerlandais"],
+    "celtique": ["breton", "gaélique irlandais", "gallois", "gaulois"],
+    "anglais": ["anglais"],
+    "romane": ["italien", "espagnol", "portugais", "catalan", "occitan", "roumain", "ancien français"],
+    "slave": ["russe", "polonais", "ukrainien", "serbe", "bulgare", "tchèque"],
+}
+CODES_TENDANCES = {"emergent": "e", "progression": "p", "retour": "r", "vagues": "v", "declin": "d", "devenu_rare": "x"}
+
 # Version du format des fichiers JSON publiés (changer si la structure change).
 VERSION_FORMAT = 1

@@ -1,10 +1,12 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import App from './App.vue'
-import Recherche from './views/Recherche.vue'
+import Trouver from './views/Trouver.vue'
 import './style.css'
 
 // Les autres pages (et la bibliothèque de graphiques) ne sont téléchargées qu'à leur première ouverture.
+const Recherche = () => import('./views/Recherche.vue')
+const Liste = () => import('./views/Liste.vue')
 const Fiche = () => import('./views/Fiche.vue')
 const Classements = () => import('./views/Classements.vue')
 const Tendances = () => import('./views/Tendances.vue')
@@ -14,7 +16,9 @@ const Methode = () => import('./views/Methode.vue')
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/', name: 'recherche', component: Recherche },
+    { path: '/', name: 'trouver', component: Trouver },
+    { path: '/liste', name: 'liste', component: Liste },
+    { path: '/recherche', name: 'recherche', component: Recherche },
     { path: '/prenom/:id', name: 'fiche', component: Fiche, props: true },
     { path: '/classements', name: 'classements', component: Classements },
     { path: '/tendances', name: 'tendances', component: Tendances },
@@ -25,7 +29,7 @@ const router = createRouter({
 })
 
 // La fiche remplace ce titre par le nom du prénom une fois chargée.
-const TITRES = { classements: 'Classements', tendances: 'Tendances', methode: 'Méthode et sources' }
+const TITRES = { liste: 'Ma liste', recherche: 'Rechercher', classements: 'Classements', tendances: 'Tendances', methode: 'Méthode et sources' }
 router.afterEach((to) => { document.title = TITRES[to.name] ? `${TITRES[to.name]} — Prénoscope` : 'Prénoscope' })
 
 createApp(App).use(router).mount('#app')

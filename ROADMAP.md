@@ -46,9 +46,18 @@ Reste à faire ou à décider plus tard :
 - [x] Publication automatique sur GitHub Pages (`.github/workflows/deploy.yml`, guide `DEPLOIEMENT.md`)
 - [ ] Création du dépôt et premier envoi (par le porteur du projet)
 
-## Phase 4 — Générateur avancé
+## Phase 4 — Suggestions pour un futur parent (en cours)
 
-Filtres d'origine, style, syllabes, popularité ; tirage aléatoire sans répétition ; mode pondéré ; suggestions d'assouplissement ; favoris (localStorage).
+But premier du site : aider à trouver le prénom d'un bébé à venir.
+
+- [x] Profils de suggestion (`profils.v1.json`, ≈ 10 000 prénoms) : popularité récente, rang, époque, tendances, syllabes (estimées), origines
+- [x] Mini-questionnaire facultatif (sexe, popularité, style, sonorité et initiales, origines, prénoms à exclure / aimés)
+- [x] Défilé de suggestions : garder, à revoir, écarter, annuler ; raccourcis clavier ; tirage varié sans préférences
+- [x] Apprentissage léger des goûts d'après les prénoms gardés et écartés ; assouplissement signalé des critères trop stricts
+- [x] Ma liste : conservée dans le navigateur, export / import de fichier, lien de partage et prénoms en commun avec un proche
+- [ ] Comparer les courbes des prénoms gardés sur une même page
+- [ ] Harmonie avec le nom de famille, fratrie, région d'attache
+- [ ] Mesurer l'usage réel (ce qui est gardé ou écarté) pour régler les seuils de popularité et de style
 
 ## Phase 5 — Finalisation et déploiement
 

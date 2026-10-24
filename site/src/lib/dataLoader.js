@@ -1,6 +1,8 @@
 // Chargement des fichiers JSON générés par le pipeline (site/public/data/).
 // Chaque fichier n'est téléchargé qu'une fois par visite (cache en mémoire).
 
+import { decoderProfils } from './suggestions.js'
+
 const BASE = import.meta.env.BASE_URL + 'data/'
 const cache = new Map()
 
@@ -98,3 +100,10 @@ export const chargerEncyclo = (prenom) => entreeOptionnelle(`encyclo/${prenom.lo
 
 /** Enrichissement Wiktionnaire (CC BY-SA 4.0) : étymologie, origine, prononciation, variantes. */
 export const chargerWiktionnaire = (prenom) => entreeOptionnelle(`wiktionnaire/${prenom.lot}.json`, prenom.id)
+
+/** Profils compacts des prénoms suggérables (voir pipeline/export_json.py, exporter_profils). */
+let profilsDecodes = null
+export async function chargerProfils() {
+  if (!profilsDecodes) profilsDecodes = decoderProfils(await charger('profils.v1.json'))
+  return profilsDecodes
+}

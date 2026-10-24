@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { chargerMeta } from './lib/dataLoader.js'
+import { selection } from './lib/etatSelection.js'
 
 const meta = ref(null)
 const contenu = ref(null)
@@ -16,7 +17,9 @@ onMounted(async () => {
     <div class="conteneur entete-interieur">
       <RouterLink to="/" class="logo">Prénoscope</RouterLink>
       <nav aria-label="Navigation principale">
-        <RouterLink to="/" class="nav" exact-active-class="actif">Rechercher</RouterLink>
+        <RouterLink to="/" class="nav" exact-active-class="actif">Trouver</RouterLink>
+        <RouterLink to="/liste" class="nav" active-class="actif">Ma liste<template v-if="selection.gardes.length"> ({{ selection.gardes.length }})</template></RouterLink>
+        <RouterLink to="/recherche" class="nav" active-class="actif">Rechercher</RouterLink>
         <RouterLink to="/classements" class="nav" active-class="actif">Classements</RouterLink>
         <RouterLink to="/tendances" class="nav" active-class="actif">Tendances</RouterLink>
         <RouterLink to="/methode" class="nav" active-class="actif">Méthode</RouterLink>
