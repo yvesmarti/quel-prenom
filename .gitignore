@@ -1,0 +1,15 @@
+# Données brutes et base de travail : reconstruites par `python pipeline/run_all.py`
+data/raw/
+data/work/
+
+# Environnements et dépendances
+.venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+
+# Build du site
+site/dist/
+
+.DS_Store
+Thumbs.db

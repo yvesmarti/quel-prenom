@@ -1,0 +1,4 @@
+* text=auto eol=lf
+# Fichiers générés par le pipeline : pas de diff ligne à ligne
+site/public/data/** -diff linguist-generated
+data/reports/*.json linguist-generated

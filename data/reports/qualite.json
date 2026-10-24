@@ -1,0 +1,131 @@
+{
+  "fichier_source": {
+    "url": "https://www.insee.fr/fr/statistiques/fichier/8595130/prenoms-2025.parquet",
+    "taille_octets": 18946679,
+    "sha256": "f78a41de5b4aa77af3f4ba2fbf29fcdf428250ae9a49a019fb61246269075070",
+    "recupere_le": "2026-10-24T14:53:37+00:00"
+  },
+  "nb_lignes_brutes": 6622949,
+  "lignes_par_niveau": {
+    "DEP": 3969540,
+    "FRANCE": 724645,
+    "REG": 1928764
+  },
+  "annees": [
+    "1900",
+    "2025"
+  ],
+  "nb_prenoms": 49163,
+  "nb_couples_prenom_sexe": 52340,
+  "nb_prenoms_avec_statistiques": 49163,
+  "par_usage": {
+    "F": 25881,
+    "M": 21755,
+    "X": 1527
+  },
+  "portes_par_les_deux_sexes": 3177,
+  "composes": 3593,
+  "avec_accent": 7151,
+  "groupes_ambigus_normalisation": 4750,
+  "prenoms_dans_groupes_ambigus": 10454,
+  "exemples_ambigus": [
+    [
+      "EDEN",
+      "EDÈN",
+      "EDÉN",
+      "EDËN",
+      "ÉDEN",
+      "ËDEN"
+    ],
+    [
+      "ELEA",
+      "ELÈA",
+      "ELÉA",
+      "ELËA",
+      "ÉLEA",
+      "ÉLÉA"
+    ],
+    [
+      "ELENA",
+      "ELÈNA",
+      "ELÉNA",
+      "ÉLENA",
+      "ÉLÈNA",
+      "ÉLÉNA"
+    ],
+    [
+      "ELEONORE",
+      "ELÈONORE",
+      "ELÉONORE",
+      "ÉLEONORE",
+      "ÉLÈONORE",
+      "ÉLÉONORE"
+    ],
+    [
+      "ENES",
+      "ENÈS",
+      "ÈNES",
+      "ÈNÈS",
+      "ÉNES",
+      "ÉNÈS"
+    ],
+    [
+      "ESTEBAN",
+      "ESTEBÀN",
+      "ESTÈBAN",
+      "ESTÉBAN",
+      "ESTÉBÀN",
+      "ÉSTÉBAN"
+    ],
+    [
+      "GWENAELLE",
+      "GWENAËLLE",
+      "GWENÄELLE",
+      "GWÉNAELLE",
+      "GWÉNAËLLE",
+      "GWËNAELLE"
+    ],
+    [
+      "HELENA",
+      "HELÉNA",
+      "HÈLÉNA",
+      "HÉLENA",
+      "HÉLÈNA",
+      "HÉLÉNA"
+    ]
+  ],
+  "presents_une_seule_annee": 13218,
+  "fiches_enrichies": 0,
+  "etymologies_sourcees": 0,
+  "personnalites": 0,
+  "taille_index": {
+    "brut": 3012486,
+    "gzip": 690712
+  },
+  "taille_lots": {
+    "nb": 353,
+    "brut": 11236392,
+    "gzip": 3518553,
+    "plus_gros": [
+      "ma.json",
+      877271
+    ]
+  },
+  "anomalies_inspection": {
+    "valeurs_zero": 0,
+    "valeurs_non_multiples_de_5": 0,
+    "doublons_cle": 0,
+    "rangs_dupliques": 0,
+    "groupes_rangs_non_contigus": 0,
+    "inversions_rang_valeur": 0,
+    "periodes_non_numeriques": [],
+    "prenoms_codes_speciaux": [],
+    "prenoms_avec_espace": [
+      "M BAREK",
+      "M BARKA",
+      "M HAMED",
+      "N DEYE"
+    ],
+    "valeur_min": 5
+  }
+}
