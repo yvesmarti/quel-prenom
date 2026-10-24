@@ -2,8 +2,10 @@ import { createApp } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import App from './App.vue'
 import Recherche from './views/Recherche.vue'
-import Fiche from './views/Fiche.vue'
 import './style.css'
+
+// La fiche (et la bibliothèque de graphiques) n'est téléchargée qu'à la première ouverture.
+const Fiche = () => import('./views/Fiche.vue')
 
 // Mode « hash » (#/prenom/lea) : fonctionne sur un hébergement statique sans configuration.
 const router = createRouter({
@@ -15,5 +17,8 @@ const router = createRouter({
   ],
   scrollBehavior: (to, from, saved) => saved || { top: 0 },
 })
+
+// La fiche remplace ce titre par le nom du prénom une fois chargée.
+router.afterEach(() => { document.title = 'Prénoscope' })
 
 createApp(App).use(router).mount('#app')
