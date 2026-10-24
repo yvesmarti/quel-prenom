@@ -82,23 +82,6 @@ git push
 
 Le site se met à jour tout seul quelques minutes après.
 
-## Option : publier avec une adresse e-mail anonyme
-
-À faire **avant le premier `git push`**. Sur GitHub : **Settings** (du compte) → **Emails** → cocher
-*Keep my email addresses private* et copier l'adresse du type `12345678+compte@users.noreply.github.com`. Puis :
-
-```
-git config user.email "12345678+compte@users.noreply.github.com"
-```
-
-(les futurs commits utiliseront cette adresse)
-
-```
-git rebase --root --exec "git commit --amend --reset-author --no-edit"
-```
-
-(réécrit les commits existants avec la nouvelle adresse ; à ne faire que tant que rien n'a été envoyé)
-
 ## Ce que contient cette première version (MVP)
 
 - Recherche et filtres sur les 49 163 prénoms de l'Insee (1900–2025).
